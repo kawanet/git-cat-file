@@ -1,6 +1,7 @@
 /**
  * https://github.com/kawanet/git-cat-file
  */
+import * as Buffer from "buffer";
 
 export declare module GCF {
     type ObjType = "blob" | "commit" | "tag" | "tree";
@@ -17,24 +18,19 @@ export declare module GCF {
         findCommitId(revision: string): Promise<string>;
 
         /**
-         * get object type for the full object_id given
-         */
-        getType(object_id: string): Promise<ObjType>;
-
-        /**
          * get object content for the full object_id given
          */
-        getObject(object_id: string): Promise<Buffer>;
+        getObject(object_id: string): Promise<IObject>;
 
         /**
          * find the commit for the given branch name, tag, etc.
          */
-        getCommit(commit_id: string): Commit;
+        getCommit(commit_id: string): Promise<Commit>;
 
         /**
          * get a list of objects for the full object_id given
          */
-        getTree(object_id: string): Tree;
+        getTree(object_id: string): Promise<Tree>;
     }
 
     interface Commit {
@@ -53,6 +49,11 @@ export declare module GCF {
         getEntry(path: string): Promise<Entry>;
 
         getTree(path: string): Promise<Tree>;
+    }
+
+    interface IObject {
+        type: ObjType;
+        data: Buffer;
     }
 
     interface Entry {
@@ -82,11 +83,6 @@ export declare module GCF {
         isSymlink: boolean; // 120000
         isSubmodule: boolean; // 160000
         isDirectory: boolean; // 040000
-    }
-
-    interface ObjItem {
-        type: ObjType;
-        data: Buffer;
     }
 }
 

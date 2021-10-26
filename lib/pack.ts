@@ -2,8 +2,8 @@
  * https://github.com/kawanet/git-cat-file
  */
 
-import {promises as fs} from "fs";
 import type {GCF} from "..";
+import {promises as fs} from "fs";
 
 import {readPackIndex} from "./pack-idx";
 import {readPackedObject} from "./pack-obj";
@@ -16,9 +16,9 @@ export class Pack {
 
     private getIndex = longCache(() => readPackIndex(this.path));
 
-    protected getList = longCache(() => this.getIndex().then(index => Object.keys(index).sort()));
+    private getList = longCache(() => this.getIndex().then(index => Object.keys(index).sort()));
 
-    async find(object_id: string): Promise<string[]> {
+    async findAll(object_id: string): Promise<string[]> {
         const list = await this.getList();
         const index: { [oid: string]: 1 } = {};
         const {length} = object_id;
@@ -32,8 +32,9 @@ export class Pack {
         return Object.keys(index);
     }
 
-    async getObjItem(object_id: string, repo: GCF.Repo): Promise<GCF.ObjItem> {
-        const offset = await this.getOffset(object_id);
+    async getObject(object_id: string, repo: GCF.Repo): Promise<GCF.IObject> {
+        const index = await this.getIndex();
+        const offset = index[object_id];
         if (!offset) return;
 
         // console.warn(`open: ${this.path}`);
@@ -41,10 +42,5 @@ export class Pack {
         const obj = await readPackedObject(fh, offset, repo);
         await fh.close();
         return obj;
-    }
-
-    private async getOffset(object_id: string): Promise<number> {
-        const index = await this.getIndex();
-        return index[object_id];
     }
 }

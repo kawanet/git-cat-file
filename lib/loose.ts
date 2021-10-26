@@ -2,9 +2,10 @@
  * https://github.com/kawanet/git-cat-file
  */
 
+import type {GCF} from "..";
+
 import {promises as fs} from "fs";
 import {inflateSync} from "zlib";
-import type {GCF} from "..";
 
 import {shortCache} from "./cache";
 
@@ -13,40 +14,25 @@ export class Loose {
         //
     }
 
-    private getList = shortCache((first: string) => readdir(`${this.root}/.git/objects/${first}`));
+    private readdir = shortCache((first: string) => fs.readdir(`${this.root}/.git/objects/${first}`));
 
-    async find(oid: string): Promise<string[]> {
-        const first = oid.slice(0, 2);
-        const rest = oid.slice(2);
+    async findAll(object_id: string): Promise<string[]> {
+        const first = object_id.slice(0, 2);
+        const rest = object_id.slice(2);
         const {length} = rest;
-        const files: string[] = await this.getList(first).catch(_ => null);
+        const files: string[] = await this.readdir(first).catch(_ => null);
         if (!files) return;
         return files.filter(name => name.slice(0, length) === rest).map(name => (first + name));
     }
 
-    async getObjItem(oid: string): Promise<GCF.ObjItem> {
+    async getObject(oid: string): Promise<GCF.IObject> {
         const first = oid.slice(0, 2);
         const rest = oid.slice(2);
-        const data = await fs.readFile(`${this.root}/.git/objects/${first}/${rest}`);
-        // console.warn(`loaded: ${data.length} bytes`);
-        const raw = inflateSync(data);
-        // console.warn(`inflated: ${raw.length} bytes`);
-        return parseLooseObject(raw);
+        const obj = new LooseObject(`${this.root}/.git/objects/${first}/${rest}`);
+        const type = await obj.getType();
+        const data = await obj.getData();
+        return {type, data};
     }
-}
-
-function readdir(path: string): Promise<string[]> {
-    // console.warn(`readdir: ${path}`);
-    return fs.readdir(path);
-}
-
-function parseLooseObject(buf: Buffer): GCF.ObjItem {
-    const offset = findZero(buf);
-    const head = buf.slice(0, offset - 2).toString();
-    const type = head.split(/\s+/).shift() as GCF.ObjType;
-    // console.warn(`header: ${head}`);
-    const data = buf.slice(offset);
-    return {type, data};
 }
 
 function findZero(buf: Buffer, offset?: number): number {
@@ -55,4 +41,39 @@ function findZero(buf: Buffer, offset?: number): number {
         // nop
     }
     return offset;
+}
+
+class LooseObject {
+    private buf: Promise<Buffer>;
+    private offset: Promise<number>;
+    private type: Promise<GCF.ObjType>;
+
+    constructor(private readonly path: string) {
+        //
+    }
+
+    private getRaw(): Promise<Buffer> {
+        return this.buf || (this.buf = fs.readFile(this.path).then(inflateSync));
+    }
+
+    private getOffset(): Promise<number> {
+        return this.offset || (this.offset = this.getRaw().then(findZero));
+    }
+
+    getType(): Promise<GCF.ObjType> {
+        return this.type || (this.type = this.parseType());
+    }
+
+    private async parseType(): Promise<GCF.ObjType> {
+        const raw = await this.getRaw();
+        const offset = await this.getOffset();
+        const head = raw.slice(0, offset - 2).toString();
+        return head.split(/\s+/).shift() as GCF.ObjType;
+    }
+
+    async getData(): Promise<Buffer> {
+        const raw = await this.getRaw();
+        const offset = await this.getOffset();
+        return raw.slice(offset);
+    }
 }

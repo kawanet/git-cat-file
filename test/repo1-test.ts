@@ -20,10 +20,11 @@ describe(TITLE, () => {
         assert.equal(typeof HEAD, "string");
         assert.equal(HEAD?.length, 40);
 
-        const type = await repo.getType(HEAD);
+        const obj = await repo.getObject(HEAD);
+        const {type} = obj;
         assert.equal(type, "commit");
 
-        const commit = repo.getCommit(HEAD);
+        const commit = await repo.getCommit(HEAD);
         assert.equal(await commit.getMessage(), "Empty\n");
 
         const file = await commit.getFile(`foo.txt`);
@@ -32,15 +33,19 @@ describe(TITLE, () => {
     });
 
     it(`Tree`, async () => {
-        const commit = repo.getCommit(HEAD);
-        const tree = repo.getTree(await commit.getMeta("tree"));
+        const commit = await repo.getCommit(HEAD);
+        const treeId = await commit.getMeta("tree");
+        assert.equal(typeof treeId, "string");
+
+        const tree = await repo.getTree(treeId);
         assert.ok(Array.isArray(await tree.getEntries()));
 
         const entry = await tree.getEntry(`bar/buz.txt`);
         assert.equal(entry.name, "buz.txt");
         assert.equal(entry.mode.isFile, true);
 
-        const data = await repo.getObject(entry.oid);
+        const obj = await repo.getObject(entry.oid);
+        const {data} = obj;
         assert.equal(data + "", "Buz\n");
     });
 });

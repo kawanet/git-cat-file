@@ -13,7 +13,7 @@ const {openLocalRepo} = require("git-cat-file");
 async function showFile(revision, path) {
   const repo = openLocalRepo(".");
   const commitId = await repo.findCommitId(revision);
-  const commit = repo.getCommit(commitId);
+  const commit = await repo.getCommit(commitId);
   const file = await commit.getFile(path);
   process.stdout.write(file.data);
 }

@@ -7,12 +7,14 @@ import type {GCF} from "..";
 import {getFileMode} from "./file-mode";
 
 export class Tree implements GCF.Tree {
+
     constructor(protected readonly repo: GCF.Repo, protected readonly object_id: string) {
         //
     }
 
     async getEntries(): Promise<GCF.Entry[]> {
-        const data = await this.repo.getObject(this.object_id);
+        const obj = await this.repo.getObject(this.object_id);
+        const {data} = obj;
         if (data) return parseTree(data);
     }
 

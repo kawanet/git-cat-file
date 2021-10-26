@@ -17,12 +17,13 @@ export class Commit implements GCF.Commit {
     private async parseMeta(): Promise<void> {
         if (this.meta) return;
 
-        const type = await this.repo.getType(this.commit_id);
+        const obj = await this.repo.getObject(this.commit_id);
+        const {type} = obj;
         if (type !== "commit") {
             throw new Error(`Invalid type: ${type}`);
         }
 
-        const data = await this.repo.getObject(this.commit_id);
+        const {data} = obj;
         const meta = this.meta = {} as GCF.CommitMeta;
         const lines = data.toString().split(/\r?\n/);
         let headerMode = true;
@@ -68,9 +69,11 @@ export class Commit implements GCF.Commit {
         if (!entry) return;
 
         const {oid, mode} = entry;
-        const type = await this.repo.getType(oid);
+        const obj = await this.repo.getObject(oid);
+        const {type} = obj;
         if (type !== "blob") return;
-        const data = await this.repo.getObject(oid);
+
+        const {data} = obj;
         return {mode, data};
     }
 }

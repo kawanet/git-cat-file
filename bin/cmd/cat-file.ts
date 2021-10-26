@@ -24,11 +24,12 @@ export async function execute(repo: GCF.Repo, args: string[], _options: any) {
         process.exit(1);
     }
 
-    const commit = await repo.findCommitId(revision);
-    const object_id = commit || await repo.findObjectId(revision);
+    const commit_id = await repo.findCommitId(revision);
+    const object_id = commit_id || await repo.findObjectId(revision);
     // console.warn(`object_id: ${object_id} (${revision})`);
 
-    const type = await repo.getType(object_id);
+    const obj = await repo.getObject(object_id);
+    const {type} = obj;
     if (params.t) {
         process.stdout.write(`${type}\n`);
         process.exit(0);
@@ -37,8 +38,7 @@ export async function execute(repo: GCF.Repo, args: string[], _options: any) {
     if (type === "tree") {
         return lsTree.execute(repo, [object_id], null);
     } else {
-        const data = await repo.getObject(object_id);
-        process.stdout.write(data);
+        process.stdout.write(obj.data);
     }
 }
 

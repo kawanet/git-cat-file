@@ -2,8 +2,8 @@
  * https://github.com/kawanet/git-cat-file
  */
 
-import {promises as fs} from "fs";
 import type {GCF} from "..";
+import {promises as fs} from "fs";
 
 import {shortCache} from "./cache";
 
@@ -19,7 +19,7 @@ export class Ref {
         //
     }
 
-    async resolve(revision: string, repo: GCF.Repo): Promise<string> {
+    async findCommitId(revision: string, repo: GCF.Repo): Promise<string> {
         if (!revision || !/[^.\/]/.test(revision)) {
             throw new Error(`Invalid revision: ${revision}`);
         }
@@ -30,7 +30,7 @@ export class Ref {
 
         const orig = revision;
         while (revision) {
-            revision = await this.findCommitForRef(revision);
+            revision = await this.searchRef(revision);
             if (!revision) break;
 
             const ref = revision.replace(/^ref:\s*/, "");
@@ -46,20 +46,21 @@ export class Ref {
         const object_id = await repo.findObjectId(orig);
         if (!object_id) return; // not found
 
-        const type = await repo.getType(object_id);
+        const obj = await repo.getObject(object_id);
+        const {type} = obj;
         if (type === "commit") return object_id;
     }
 
     private readPackedRefIndex = shortCache(async () => {
         const index: { [ref: string]: string } = {};
-        const list = await this.readPackedRefs();
+        const list = await this.readPackedRefList();
         for (const ref of list) {
             index[ref.ref] = ref.commit;
         }
         return index;
     });
 
-    private async readPackedRefs(): Promise<RefCommit[]> {
+    private async readPackedRefList(): Promise<RefCommit[]> {
         const list: RefCommit[] = [];
         const text: string = await this.readTextFile(`packed-refs`).catch(_ => null);
         if (!text) return list;
@@ -72,7 +73,7 @@ export class Ref {
         return list;
     }
 
-    private async findCommitForRef(ref: string): Promise<string> {
+    private async searchRef(ref: string): Promise<string> {
         // .git/HEAD
         if (/HEAD$/.test(ref)) {
             const commit = await this.readFirstLine(ref).catch(_ => null);

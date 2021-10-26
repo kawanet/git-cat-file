@@ -4,9 +4,9 @@
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-format.txt
  */
 
+import type {GCF} from "..";
 import {promises as fs} from "fs";
 import {inflateSync} from "zlib";
-import type {GCF} from "..";
 
 const enum TypeBit {
     OBJ_COMMIT = 1,
@@ -19,27 +19,28 @@ const enum TypeBit {
 
 const typeNames: GCF.ObjType[] = [null, "commit", "tree", "blob", "tag"];
 const deltaTypes = {6: "OBJ_OFS_DELTA", 7: "OBJ_REF_DELTA"};
+
 // const toHex = (buf: Buffer) => buf.toString("hex").replace(/(\w.)(?=\w)/g, "$1 ");
 
-export async function readPackedObject(fh: fs.FileHandle, start: number, repo: GCF.Repo): Promise<GCF.ObjItem> {
+export async function readPackedObject(fh: fs.FileHandle, start: number, repo: GCF.Repo): Promise<GCF.IObject> {
     const buffer = Buffer.alloc(28);
     await fh.read({buffer, position: start});
     // console.warn(`read: ${start} (${toHex(buffer)})`);
 
-    let pos = 0;
-    let c = buffer[pos++];
+    let offset = 0;
+    let c = buffer[offset++];
 
     const typeBit = (c & 0x70) >> 4;
     const type = typeNames[typeBit];
-    const deltaType = deltaTypes[typeBit as keyof typeof deltaTypes] || type;
-    // console.warn(`type: ${typeBit} (${deltaType})`);
-    if (!deltaType) throw new TypeError(`Invalid type: ${typeBit}`);
+    const deltaType = deltaTypes[typeBit as keyof typeof deltaTypes];
+    // console.warn(`type: ${typeBit} (${deltaType || type})`);
+    if (!deltaType && !type) throw new TypeError(`Invalid type: ${typeBit}`);
 
     let size = c & 0x0F;
     {
         let shift = 4;
         while (c & 0x80) {
-            c = buffer[pos++];
+            c = buffer[offset++];
             size += ((c & 0x7F) << shift);
             shift += 7;
         }
@@ -47,42 +48,39 @@ export async function readPackedObject(fh: fs.FileHandle, start: number, repo: G
     // console.warn(`size: ${size} bytes`);
 
     if (typeBit === TypeBit.OBJ_OFS_DELTA) {
-        let c = buffer[pos++];
-        let base_offset = c & 0x7F;
+        let c = buffer[offset++];
+        let baseOffset = c & 0x7F;
         while (c & 0x80) {
-            base_offset += 1; // see unpack-objects.c
-            c = buffer[pos++];
-            base_offset = (base_offset << 7) + (c & 0x7F);
+            baseOffset += 1; // see unpack-objects.c
+            c = buffer[offset++];
+            baseOffset = (baseOffset << 7) + (c & 0x7F);
         }
 
-        if (start < base_offset) {
-            throw new RangeError(`offset value out of bound: ${start} < ${base_offset}`);
+        if (start < baseOffset) {
+            throw new RangeError(`offset value out of bound: ${start} < ${baseOffset}`);
         }
 
-        // console.warn(`delta: ${start} + ${pos}`);
-        const delta = await getData(fh, start + pos, size);
+        // console.warn(`delta: ${start} + ${offset}`);
+        const delta = await readData(fh, start + offset, size);
 
-        // console.warn(`base: ${start} - ${base_offset}`);
-        const base = await readPackedObject(fh, start - base_offset, repo);
-
+        // console.warn(`base: ${start} - ${baseOffset}`);
+        const base = await readPackedObject(fh, start - baseOffset, repo);
         const data = applyDelta(base.data, delta);
         return {type: base.type, data};
     }
 
     if (typeBit === TypeBit.OBJ_REF_DELTA) {
-        const end = pos + 20;
-        const oid = buffer.slice(pos, end).toString("hex");
-        pos = end;
+        const end = offset + 20;
+        const oid = buffer.slice(offset, end).toString("hex");
+        offset = end;
 
-        // console.warn(`delta: ${start} + ${pos}`);
-        const delta = await getData(fh, start + pos, size);
+        // console.warn(`delta: ${start} + ${offset}`);
+        const delta = await readData(fh, start + offset, size);
 
         // console.warn(`base: ${oid}`);
-        const type = await repo.getType(oid);
         const base = await repo.getObject(oid);
-
-        const data = applyDelta(base, delta);
-        return {type, data};
+        const data = applyDelta(base.data, delta);
+        return {type: base.type, data};
     }
 
     if (!size) {
@@ -90,17 +88,16 @@ export async function readPackedObject(fh: fs.FileHandle, start: number, repo: G
         return {type, data};
     }
 
-    // console.warn(`position: ${start} + ${pos}`);
-    const data = await getData(fh, start + pos, size);
+    // console.warn(`position: ${start} + ${offset}`);
+    const data = await readData(fh, start + offset, size);
     return {type, data};
 }
 
-async function getData(fh: fs.FileHandle, position: number, size: number): Promise<Buffer> {
-    const buffer = Buffer.alloc(size * 17 / 16 + 256);
+async function readData(fh: fs.FileHandle, position: number, size: number): Promise<Buffer> {
+    const bufSize = Math.ceil(size * 17 / 16 / 512) * 512;
+    const buffer = Buffer.alloc(bufSize);
     await fh.read({buffer, position});
-    const data = inflateSync(buffer, {maxOutputLength: size});
-    // console.warn(`inflated: ${data.length} bytes`);
-    return data;
+    return inflateSync(buffer, {maxOutputLength: size});
 }
 
 function applyDelta(baseData: Buffer, deltaData: Buffer): Buffer {
@@ -109,11 +106,11 @@ function applyDelta(baseData: Buffer, deltaData: Buffer): Buffer {
 
     // console.warn(`delta: ${toHex(deltaData.slice(0, 32))}`);
 
-    // const srcSize = readSize();
-    // console.warn(`srcSize: ${srcSize}`);
+    const srcSize = readSize();
+    if (!srcSize) throw new Error(`Invalid source size: ${srcSize}`);
 
     const dstSize = readSize();
-    // console.warn(`dstSize: ${dstSize}`);
+    if (!dstSize) throw new Error(`Invalid dest size: ${dstSize}`);
 
     const dstData = Buffer.alloc(dstSize);
     const deltaEnd = deltaData.length;
