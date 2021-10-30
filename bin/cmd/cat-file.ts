@@ -24,9 +24,7 @@ export async function execute(repo: GCF.Repo, args: string[], _options: any) {
         process.exit(1);
     }
 
-    const commit_id = await repo.findCommitId(revision);
-    const obj = await repo.getObject(commit_id || revision);
-    const {oid, type} = obj;
+    const {oid, type, data} = await repo.getObject(revision);
     if (params.t) {
         process.stdout.write(`${type}\n`);
         process.exit(0);
@@ -35,7 +33,7 @@ export async function execute(repo: GCF.Repo, args: string[], _options: any) {
     if (type === "tree") {
         return lsTree.execute(repo, [oid], null);
     } else {
-        process.stdout.write(obj.data);
+        process.stdout.write(data);
     }
 }
 

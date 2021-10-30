@@ -12,8 +12,7 @@ export async function execute(repo: GCF.Repo, args: string[], _options: any) {
         process.exit(1);
     }
 
-    const commit_id = await repo.findCommitId(revision);
-    const obj = await repo.getObject(commit_id || revision);
+    const obj = await repo.getObject(revision);
     let {oid, type} = obj;
 
     if (type === "commit") {

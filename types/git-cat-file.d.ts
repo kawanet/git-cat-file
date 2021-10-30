@@ -8,11 +8,6 @@ export declare module GCF {
 
     interface Repo {
         /**
-         * find the full commit_id for branch name, tag, etc.
-         */
-        findCommitId(revision: string): Promise<string>;
-
-        /**
          * get object content for the full object_id given
          */
         getObject(object_id: string): Promise<IObject>;
@@ -29,6 +24,8 @@ export declare module GCF {
     }
 
     interface Commit {
+        getId(): Promise<string>;
+
         getMeta(key: keyof CommitMeta): Promise<string>;
 
         getMessage(): Promise<string>;

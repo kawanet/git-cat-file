@@ -9,21 +9,26 @@ import {Tree} from "./tree";
 export class Commit implements GCF.Commit {
     private meta: GCF.CommitMeta;
     private message: string;
+    private oid: string;
 
-    constructor(protected readonly repo: GCF.Repo, protected readonly commit_id: string) {
-        //
+    constructor(protected readonly repo: GCF.Repo, commit_id: string) {
+        this.oid = commit_id;
+    }
+
+    async getId(): Promise<string> {
+        return this.oid;
     }
 
     private async parseMeta(): Promise<void> {
         if (this.meta) return;
 
-        const obj = await this.repo.getObject(this.commit_id);
-        const {type} = obj;
+        const {oid, type, data} = await this.repo.getObject(this.oid);
+        this.oid = oid;
+
         if (type !== "commit") {
             throw new Error(`Invalid type: ${type}`);
         }
 
-        const {data} = obj;
         const meta = this.meta = {} as GCF.CommitMeta;
         const lines = data.toString().split(/\r?\n/);
         let headerMode = true;

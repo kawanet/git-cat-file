@@ -7,7 +7,8 @@ import type {GCF} from "../..";
 export async function execute(repo: GCF.Repo, args: string[], _options: any) {
     while (args.length) {
         const revision = args.shift();
-        const commit_id = await repo.findCommitId(revision);
+        const commit = await repo.getCommit(revision);
+        const commit_id = await commit.getId();
         if (!commit_id) {
             process.stderr.write(`Invalid revision: ${revision}\n`);
             showHelp();

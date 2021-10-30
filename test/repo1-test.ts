@@ -16,16 +16,16 @@ describe(TITLE, () => {
     });
 
     it(`Commit`, async () => {
-        HEAD = await repo.findCommitId("HEAD");
+        const commit = await repo.getCommit("HEAD");
+        assert.equal(await commit.getMessage(), "Empty\n");
+
+        HEAD = await commit.getId();
         assert.equal(typeof HEAD, "string");
         assert.equal(HEAD?.length, 40);
 
         const obj = await repo.getObject(HEAD);
         const {type} = obj;
         assert.equal(type, "commit");
-
-        const commit = await repo.getCommit(HEAD);
-        assert.equal(await commit.getMessage(), "Empty\n");
 
         const file = await commit.getFile(`foo.txt`);
         assert.equal(file.mode.isFile, true);
