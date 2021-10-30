@@ -22,7 +22,7 @@ const deltaTypes = {6: "OBJ_OFS_DELTA", 7: "OBJ_REF_DELTA"};
 
 // const toHex = (buf: Buffer) => buf.toString("hex").replace(/(\w.)(?=\w)/g, "$1 ");
 
-export async function readPackedObject(fh: fs.FileHandle, start: number, repo: GCF.Repo): Promise<GCF.IObject> {
+export async function readPackedObject(fh: fs.FileHandle, start: number, repo: GCF.Repo): Promise<Partial<GCF.IObject>> {
     const buffer = Buffer.alloc(28);
     await fh.read({buffer, position: start});
     // console.warn(`read: ${start} (${toHex(buffer)})`);

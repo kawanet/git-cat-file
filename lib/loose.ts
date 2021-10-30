@@ -31,7 +31,7 @@ export class Loose {
         const obj = new LooseObject(`${this.root}/.git/objects/${first}/${rest}`);
         const type = await obj.getType();
         const data = await obj.getData();
-        return {type, data};
+        return {oid, type, data};
     }
 }
 

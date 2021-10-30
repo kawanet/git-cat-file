@@ -52,6 +52,7 @@ export declare module GCF {
     }
 
     interface IObject {
+        oid: string;
         type: ObjType;
         data: Buffer;
     }
@@ -71,6 +72,7 @@ export declare module GCF {
     }
 
     interface File {
+        oid: string;
         mode: FileMode;
         data: Buffer;
     }

@@ -41,6 +41,7 @@ export class Pack {
         const fh = await fs.open(this.path, "r");
         const obj = await readPackedObject(fh, offset, repo);
         await fh.close();
-        return obj;
+        const {type, data} = obj;
+        return {oid: object_id, type, data};
     }
 }

@@ -74,7 +74,7 @@ export class Commit implements GCF.Commit {
         if (type !== "blob") return;
 
         const {data} = obj;
-        return {mode, data};
+        return {oid, mode, data};
     }
 }
 
