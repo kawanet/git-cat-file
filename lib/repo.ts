@@ -9,6 +9,8 @@ import {shortCache} from "./cache";
 import {ObjStore} from "./obj-store";
 import {Ref} from "./ref";
 
+const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/.test(oid));
+
 export class Repo implements GCF.Repo {
     private readonly ref: Ref;
     private readonly store: ObjStore;
@@ -19,11 +21,19 @@ export class Repo implements GCF.Repo {
         this.store = new ObjStore(path);
     }
 
-    findObjectId = shortCache((object_id: string): Promise<string> => this.store.findObjectId(object_id));
+    async getObject(object_id: string): Promise<GCF.IObject> {
+        if (isObjectId(object_id)) {
+            const obj = await this.store.getObject(object_id);
+            if (obj) return obj;
+        }
+
+        object_id = await this.store.findObjectId(object_id);
+        if (object_id) {
+            return this.store.getObject(object_id);
+        }
+    }
 
     findCommitId = shortCache((ref: string): Promise<string> => this.ref.findCommitId(ref, this.store));
-
-    getObject = shortCache((object_id: string): Promise<GCF.IObject> => this.store.getObject(object_id));
 
     getCommit = shortCache(async (commit_id: string): Promise<GCF.Commit> => new Commit(this, commit_id));
 

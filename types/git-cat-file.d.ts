@@ -8,11 +8,6 @@ export declare module GCF {
 
     interface Repo {
         /**
-         * find the full object_id for abbreviated object_id
-         */
-        findObjectId(object_id: string): Promise<string>;
-
-        /**
          * find the full commit_id for branch name, tag, etc.
          */
         findCommitId(revision: string): Promise<string>;

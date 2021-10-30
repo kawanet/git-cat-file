@@ -13,18 +13,13 @@ export async function execute(repo: GCF.Repo, args: string[], _options: any) {
     }
 
     const commit_id = await repo.findCommitId(revision);
-    let object_id = commit_id || await repo.findObjectId(revision);
-
-    let type: GCF.ObjType;
-    if (object_id) {
-        const obj = await repo.getObject(object_id);
-        type = obj.type;
-    }
+    const obj = await repo.getObject(commit_id || revision);
+    let {oid, type} = obj;
 
     if (type === "commit") {
-        const commit = await repo.getCommit(object_id);
-        object_id = await commit.getMeta("tree");
-        const obj = await repo.getObject(object_id);
+        const commit = await repo.getCommit(oid);
+        oid = await commit.getMeta("tree");
+        const obj = await repo.getObject(oid);
         type = obj.type;
     }
 
@@ -32,7 +27,7 @@ export async function execute(repo: GCF.Repo, args: string[], _options: any) {
         throw new Error(`Invalid tree-ish: ${revision} (${type})`);
     }
 
-    const root = await repo.getTree(object_id);
+    const root = await repo.getTree(oid);
 
     if (!args.length) {
         return showEnties(root, "");
