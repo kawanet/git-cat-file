@@ -8,6 +8,7 @@ import {promises as fs} from "fs";
 import {shortCache} from "./cache";
 import {Loose} from "./loose";
 import {Pack} from "./pack";
+import {Ref} from "./ref";
 
 /**
  * https://github.com/kawanet/git-cat-file
@@ -18,9 +19,11 @@ const isObjectId = (oid: string) => (oid && /^[0-9a-f]+$/.test(oid));
 export class ObjStore {
     private readonly loose: Loose;
     private readonly pack: { [name: string]: Pack } = {};
+    private readonly ref: Ref;
 
     constructor(private readonly root: string) {
         this.loose = new Loose(root);
+        this.ref = new Ref(root);
     }
 
     getObject = shortCache(async (object_id: string): Promise<GCF.IObject> => {
@@ -70,6 +73,8 @@ export class ObjStore {
         const matched = Object.keys(index);
         if (matched.length === 1) return matched[0];
     });
+
+    findCommitId = shortCache((commit_id: string): Promise<string> => this.ref.findCommitId(commit_id, this));
 
     protected getPackList = shortCache(async (): Promise<Pack[]> => {
         const base = `${this.root}/.git/objects/pack/`;
