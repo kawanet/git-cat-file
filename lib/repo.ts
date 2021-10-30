@@ -5,7 +5,6 @@
 import type {GCF} from "..";
 import {Commit} from "./commit";
 import {Tree} from "./tree";
-import {shortCache} from "./cache";
 import {ObjStore} from "./obj-store";
 import {Ref} from "./ref";
 
@@ -27,7 +26,9 @@ export class Repo implements GCF.Repo {
             if (obj) return obj;
         }
 
-        object_id = await this.store.findObjectId(object_id);
+        const commit_id = await this.ref.findCommitId(object_id, this.store);
+        object_id = await this.store.findObjectId(commit_id || object_id);
+
         if (object_id) {
             return this.store.getObject(object_id);
         }
@@ -37,9 +38,11 @@ export class Repo implements GCF.Repo {
         commit_id = await this.ref.findCommitId(commit_id, this.store);
         const obj = await this.store.getObject(commit_id);
         if (obj.type === "commit") {
-            return new Commit(this, commit_id);
+            return new Commit(commit_id, this.store);
         }
     }
 
-    getTree = shortCache(async (object_id: string): Promise<GCF.Tree> => new Tree(this, object_id));
+    async getTree(object_id: string): Promise<GCF.Tree> {
+        return new Tree(object_id, this.store);
+    }
 }

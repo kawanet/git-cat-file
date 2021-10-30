@@ -5,16 +5,17 @@
 import type {GCF} from "..";
 
 import {getFileMode} from "./file-mode";
+import type {ObjStore} from "./obj-store";
 
 export class Tree implements GCF.Tree {
+    protected oid: string;
 
-    constructor(protected readonly repo: GCF.Repo, protected readonly object_id: string) {
-        //
+    constructor(object_id: string, protected readonly store: ObjStore) {
+        this.oid = object_id;
     }
 
     async getEntries(): Promise<GCF.Entry[]> {
-        const obj = await this.repo.getObject(this.object_id);
-        const {data} = obj;
+        const {data} = await this.store.getObject(this.oid);
         if (data) return parseTree(data);
     }
 
@@ -36,8 +37,8 @@ export class Tree implements GCF.Tree {
 
         for (const name of path.split("/")) {
             if (!name) continue;
-            const item = await tree.getEntry(name);
-            tree = new Tree(tree.repo, item.oid);
+            const {oid} = await tree.getEntry(name);
+            tree = new Tree(oid, this.store);
         }
 
         return tree;

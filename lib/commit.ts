@@ -5,13 +5,14 @@
 import type {GCF} from "..";
 
 import {Tree} from "./tree";
+import type {ObjStore} from "./obj-store";
 
 export class Commit implements GCF.Commit {
     private meta: GCF.CommitMeta;
     private message: string;
     private oid: string;
 
-    constructor(protected readonly repo: GCF.Repo, commit_id: string) {
+    constructor(commit_id: string, protected readonly store: ObjStore) {
         this.oid = commit_id;
     }
 
@@ -22,7 +23,7 @@ export class Commit implements GCF.Commit {
     private async parseMeta(): Promise<void> {
         if (this.meta) return;
 
-        const {oid, type, data} = await this.repo.getObject(this.oid);
+        const {oid, type, data} = await this.store.getObject(this.oid);
         this.oid = oid;
 
         if (type !== "commit") {
@@ -65,7 +66,8 @@ export class Commit implements GCF.Commit {
     }
 
     async getTree(): Promise<GCF.Tree> {
-        return new Tree(this.repo, await this.getMeta("tree"));
+        const oid = await this.getMeta("tree");
+        return new Tree(oid, this.store);
     }
 
     async getFile(path: string): Promise<GCF.File> {
@@ -74,7 +76,7 @@ export class Commit implements GCF.Commit {
         if (!entry) return;
 
         const {oid, mode} = entry;
-        const obj = await this.repo.getObject(oid);
+        const obj = await this.store.getObject(oid);
         const {type} = obj;
         if (type !== "blob") return;
 
