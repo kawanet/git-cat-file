@@ -2,10 +2,10 @@
  * https://github.com/kawanet/git-cat-file
  */
 
-import type {GCF} from "..";
 import {promises as fs} from "fs";
 
 import {shortCache} from "./cache";
+import type {ObjStore} from "./obj-store";
 
 interface RefCommit {
     ref: string;
@@ -19,7 +19,7 @@ export class Ref {
         //
     }
 
-    async findCommitId(revision: string, repo: GCF.Repo): Promise<string> {
+    async findCommitId(revision: string, store: ObjStore): Promise<string> {
         if (!revision || !/[^.\/]/.test(revision)) {
             throw new Error(`Invalid revision: ${revision}`);
         }
@@ -43,10 +43,10 @@ export class Ref {
             }
         }
 
-        const object_id = await repo.findObjectId(orig);
+        const object_id = await store.findObjectId(orig);
         if (!object_id) return; // not found
 
-        const obj = await repo.getObject(object_id);
+        const obj = await store.getObject(object_id);
         const {type} = obj;
         if (type === "commit") return object_id;
     }

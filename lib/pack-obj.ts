@@ -7,6 +7,7 @@
 import type {GCF} from "..";
 import {promises as fs} from "fs";
 import {inflateSync} from "zlib";
+import type {ObjStore} from "./obj-store";
 
 const enum TypeBit {
     OBJ_COMMIT = 1,
@@ -22,7 +23,7 @@ const deltaTypes = {6: "OBJ_OFS_DELTA", 7: "OBJ_REF_DELTA"};
 
 // const toHex = (buf: Buffer) => buf.toString("hex").replace(/(\w.)(?=\w)/g, "$1 ");
 
-export async function readPackedObject(fh: fs.FileHandle, start: number, repo: GCF.Repo): Promise<Partial<GCF.IObject>> {
+export async function readPackedObject(fh: fs.FileHandle, start: number, store: ObjStore): Promise<Partial<GCF.IObject>> {
     const buffer = Buffer.alloc(28);
     await fh.read({buffer, position: start});
     // console.warn(`read: ${start} (${toHex(buffer)})`);
@@ -64,7 +65,7 @@ export async function readPackedObject(fh: fs.FileHandle, start: number, repo: G
         const delta = await readData(fh, start + offset, size);
 
         // console.warn(`base: ${start} - ${baseOffset}`);
-        const base = await readPackedObject(fh, start - baseOffset, repo);
+        const base = await readPackedObject(fh, start - baseOffset, store);
         const data = applyDelta(base.data, delta);
         return {type: base.type, data};
     }
@@ -78,7 +79,7 @@ export async function readPackedObject(fh: fs.FileHandle, start: number, repo: G
         const delta = await readData(fh, start + offset, size);
 
         // console.warn(`base: ${oid}`);
-        const base = await repo.getObject(oid);
+        const base = await store.getObject(oid);
         const data = applyDelta(base.data, delta);
         return {type: base.type, data};
     }

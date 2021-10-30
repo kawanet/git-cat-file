@@ -23,7 +23,7 @@ export class ObjStore {
         this.loose = new Loose(root);
     }
 
-    async getObject(object_id: string, repo: GCF.Repo): Promise<GCF.IObject> {
+    getObject = shortCache(async (object_id: string): Promise<GCF.IObject> => {
         if (!isObjectId(object_id)) {
             throw new Error(`Invalid object_id: ${object_id}`);
         }
@@ -31,15 +31,15 @@ export class ObjStore {
         // packed object
         const list = await this.getPackList();
         for (const pack of list) {
-            const obj = await pack.getObject(object_id, repo);
+            const obj = await pack.getObject(object_id, this);
             if (obj) return obj;
         }
 
         // loose object
         return this.loose.getObject(object_id);
-    }
+    });
 
-    async findObjectId(object_id: string): Promise<string> {
+    findObjectId = shortCache(async (object_id: string): Promise<string> => {
         const index: { [oid: string]: 1 } = {};
         // console.warn(`findObjectId: ${object_id}`);
 
@@ -69,9 +69,9 @@ export class ObjStore {
 
         const matched = Object.keys(index);
         if (matched.length === 1) return matched[0];
-    }
+    });
 
-    getPackList = shortCache(async (): Promise<Pack[]> => {
+    protected getPackList = shortCache(async (): Promise<Pack[]> => {
         const base = `${this.root}/.git/objects/pack/`;
 
         // console.warn(`readdir: ${base}`);

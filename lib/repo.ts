@@ -21,9 +21,9 @@ export class Repo implements GCF.Repo {
 
     findObjectId = shortCache((object_id: string): Promise<string> => this.store.findObjectId(object_id));
 
-    findCommitId = shortCache((ref: string): Promise<string> => this.ref.findCommitId(ref, this));
+    findCommitId = shortCache((ref: string): Promise<string> => this.ref.findCommitId(ref, this.store));
 
-    getObject = shortCache((object_id: string): Promise<GCF.IObject> => this.store.getObject(object_id, this));
+    getObject = shortCache((object_id: string): Promise<GCF.IObject> => this.store.getObject(object_id));
 
     getCommit = shortCache(async (commit_id: string): Promise<GCF.Commit> => new Commit(this, commit_id));
 

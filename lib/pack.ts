@@ -8,6 +8,7 @@ import {promises as fs} from "fs";
 import {readPackIndex} from "./pack-idx";
 import {readPackedObject} from "./pack-obj";
 import {longCache} from "./cache";
+import type {ObjStore} from "./obj-store";
 
 export class Pack {
     constructor(protected readonly path: string) {
@@ -32,14 +33,14 @@ export class Pack {
         return Object.keys(index);
     }
 
-    async getObject(object_id: string, repo: GCF.Repo): Promise<GCF.IObject> {
+    async getObject(object_id: string, store: ObjStore): Promise<GCF.IObject> {
         const index = await this.getIndex();
         const offset = index[object_id];
         if (!offset) return;
 
         // console.warn(`open: ${this.path}`);
         const fh = await fs.open(this.path, "r");
-        const obj = await readPackedObject(fh, offset, repo);
+        const obj = await readPackedObject(fh, offset, store);
         await fh.close();
         const {type, data} = obj;
         return {oid: object_id, type, data};
