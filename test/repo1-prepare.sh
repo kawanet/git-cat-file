@@ -3,8 +3,9 @@
 cd $(dirname $0)/..
 /bin/rm -fr repo/repo1
 mkdir -p repo/repo1
-git -C repo/repo1 init
+git -C repo/repo1 init -b main
 cd repo/repo1
+git config user.email "9765+kawanet@users.noreply.github.com"
 git config user.name "git-cat-file"
 git commit --allow-empty -m 'root commit'
 echo Foo > foo.txt
