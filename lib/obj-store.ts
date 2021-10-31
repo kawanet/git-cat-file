@@ -14,7 +14,7 @@ import {Ref} from "./ref";
  * https://github.com/kawanet/git-cat-file
  */
 
-const isObjectId = (oid: string) => (oid && /^[0-9a-f]+$/.test(oid));
+const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/.test(oid));
 
 export class ObjStore {
     private readonly loose: Loose;
