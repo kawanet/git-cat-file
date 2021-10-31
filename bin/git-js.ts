@@ -2,9 +2,9 @@
 
 import type {GCF} from "..";
 import {openLocalRepo} from "..";
-import * as catFile from "./cmd/cat-file";
-import * as lsTree from "./cmd/ls-tree";
-import * as revParse from "./cmd/rev-parse";
+import * as catFile from "./git-cat-file-js";
+import * as lsTree from "./git-ls-tree-js";
+import * as revParse from "./git-rev-parse-js";
 
 const options = require("process.argv")(process.argv.slice(2))({});
 

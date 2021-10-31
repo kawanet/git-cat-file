@@ -2,7 +2,7 @@
  * https://github.com/kawanet/git-cat-file
  */
 
-import type {GCF} from "../..";
+import type {GCF} from "..";
 
 export async function execute(repo: GCF.Repo, args: string[], _options: any) {
     while (args.length) {

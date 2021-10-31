@@ -2,8 +2,8 @@
  * https://github.com/kawanet/git-cat-file
  */
 
-import type {GCF} from "../..";
-import * as lsTree from "./ls-tree";
+import type {GCF} from "..";
+import * as lsTree from "./git-ls-tree-js";
 
 interface Params {
     p?: boolean; // show object type
