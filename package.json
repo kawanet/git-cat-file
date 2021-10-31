@@ -1,6 +1,6 @@
 {
   "name": "git-cat-file",
-  "description": "`git cat-file -p` for node.js",
+  "description": "Pure JavaScript `git cat-file -p` for node.js",
   "version": "0.1.0",
   "author": "@kawanet",
   "bin": {
@@ -18,9 +18,22 @@
     "mocha": "^9.1.3",
     "typescript": "^4.4.4"
   },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "bin/*.js",
+    "lib/*.js",
+    "types/*.d.ts"
+  ],
   "license": "MIT",
   "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kawanet/git-cat-file.git"
+  },
   "scripts": {
+    "build": "./node_modules/.bin/tsc -p .",
+    "prepack": "npm run build && npm test",
     "test": "make test"
   },
   "types": "types/git-cat-file.d.ts"

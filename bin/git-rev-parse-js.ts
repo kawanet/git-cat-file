@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * https://github.com/kawanet/git-cat-file
  */

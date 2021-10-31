@@ -3,21 +3,21 @@
 [![Node.js CI](https://github.com/kawanet/git-cat-file/workflows/Node.js%20CI/badge.svg?branch=main)](https://github.com/kawanet/git-cat-file/actions/)
 [![npm version](https://img.shields.io/npm/v/git-cat-file)](https://www.npmjs.com/package/git-cat-file)
 
-`git cat-file -p` for node.js
+Pure JavaScript `git cat-file -p` for node.js
 
 ## SYNOPSIS
 
 ```js
 const {openLocalRepo} = require("git-cat-file");
 
-async function showFile(revision, path) {
+async function catFile(revision, path) {
   const repo = openLocalRepo(".");
   const commit = await repo.getCommit(revision);
   const file = await commit.getFile(path);
   process.stdout.write(file.data);
 }
 
-showFile("HEAD", "path/to/file.txt");
+catFile("HEAD", "path/to/file.txt");
 ```
 
 ## CLI
