@@ -5,6 +5,7 @@ cd $(dirname $0)/..
 mkdir -p repo/repo1
 git -C repo/repo1 init
 cd repo/repo1
+git config user.name "git-cat-file"
 git commit --allow-empty -m 'root commit'
 echo Foo > foo.txt
 git add foo.txt
