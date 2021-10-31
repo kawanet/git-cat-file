@@ -2,7 +2,7 @@
  * https://github.com/kawanet/git-cat-file
  */
 
-import type {GCF} from "..";
+import {openLocalRepo} from "..";
 import * as lsTree from "./git-ls-tree-js";
 
 interface Params {
@@ -10,8 +10,16 @@ interface Params {
     t?: boolean; // show object content
 }
 
-export async function execute(repo: GCF.Repo, args: string[], _options: any) {
+export async function execute(args: string[], _options: any) {
     const params: Params = {};
+
+    if (args[0] === "-C") {
+        args.shift();
+        const path = args.shift();
+        process.chdir(path);
+    }
+
+    const repo = openLocalRepo(".");
 
     while (/^-/.test(args[0])) {
         params[args.shift().slice(1) as keyof Params] = true;
@@ -31,7 +39,7 @@ export async function execute(repo: GCF.Repo, args: string[], _options: any) {
     }
 
     if (type === "tree") {
-        return lsTree.execute(repo, [oid], null);
+        return lsTree.execute([oid], null);
     } else {
         process.stdout.write(data);
     }

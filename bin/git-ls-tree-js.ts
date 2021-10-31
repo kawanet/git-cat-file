@@ -3,8 +3,17 @@
  */
 
 import type {GCF} from "..";
+import {openLocalRepo} from "..";
 
-export async function execute(repo: GCF.Repo, args: string[], _options: any) {
+export async function execute(args: string[], _options: any) {
+    if (args[0] === "-C") {
+        args.shift();
+        const path = args.shift();
+        process.chdir(path);
+    }
+
+    const repo = openLocalRepo(".");
+
     const revision = args.shift();
     if (!revision) {
         process.stderr.write(`Usage:\n`);
