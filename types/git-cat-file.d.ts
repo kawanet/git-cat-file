@@ -1,7 +1,6 @@
 /**
  * https://github.com/kawanet/git-cat-file
  */
-import * as Buffer from "buffer";
 
 export declare module GCF {
     type ObjType = "blob" | "commit" | "tag" | "tree";
