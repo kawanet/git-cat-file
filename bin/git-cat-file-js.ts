@@ -3,48 +3,58 @@
  */
 
 import {openLocalRepo} from "..";
-import * as lsTree from "./git-ls-tree-js";
+import {showEnties} from "./git-ls-tree-js";
+import {parseOptions} from "../lib/cli-lib";
 
-interface Params {
-    p?: boolean; // show object type
-    t?: boolean; // show object content
-}
+const longParams = {
+    help: true,
+};
 
-export async function execute(args: string[], _options: any) {
-    const params: Params = {};
+const shortParams = {
+    C: "path", // change directory
+    h: true, // show help
+    p: true, // show object type
+    t: true, // show object content
+};
 
-    if (args[0] === "-C") {
-        args.shift();
-        const path = args.shift();
-        process.chdir(path);
-    }
+async function CLI(args: string[]) {
+    const options = parseOptions({
+        long: longParams,
+        short: shortParams,
+        args: args,
+    });
+    args = options.args;
 
-    const repo = openLocalRepo(".");
+    const {C} = options.short;
+    if (C) process.chdir(C);
 
-    while (/^-/.test(args[0])) {
-        params[args.shift().slice(1) as keyof Params] = true;
-    }
-
-    const revision = args.shift();
-    if (!revision || !(params.t || params.p)) {
+    const {help} = options.long;
+    const {h, t, p} = options.short;
+    const revision = options.args.shift();
+    if (help || h || !revision || !(t || p)) {
         process.stderr.write(`Usage:\n`);
         showHelp();
         process.exit(1);
     }
 
+    const repo = openLocalRepo(".");
+
     const {oid, type, data} = await repo.getObject(revision);
-    if (params.t) {
+    if (t) {
         process.stdout.write(`${type}\n`);
         process.exit(0);
     }
 
     if (type === "tree") {
-        return lsTree.execute([oid], null);
+        const tree = await repo.getTree(oid);
+        await showEnties(tree);
     } else {
         process.stdout.write(data);
     }
 }
 
-export function showHelp() {
-    process.stderr.write(`  git-js [-C path] cat-file [-t | -p] <object>\n`);
+function showHelp() {
+    process.stderr.write(`  git-cat-file-js [-C path] [-t | -p] <object>\n`);
 }
+
+if (!module.parent) CLI(process.argv.slice(2)).catch(console.error);

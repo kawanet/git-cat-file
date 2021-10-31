@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "author": "@kawanet",
   "bin": {
-    "git-js": "bin/git-js.js"
+    "git-cat-file-js": "bin/git-cat-file-js.js",
+    "git-ls-tree-js": "bin/git-ls-tree-js.js",
+    "git-rev-parse-js": "bin/git-rev-parse-js.js"
   },
   "dependencies": {
     "async-cache-queue": "^0.2.2",

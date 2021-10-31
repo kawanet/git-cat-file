@@ -4,22 +4,38 @@
 
 import type {GCF} from "..";
 import {openLocalRepo} from "..";
+import {parseOptions} from "../lib/cli-lib";
 
-export async function execute(args: string[], _options: any) {
-    if (args[0] === "-C") {
-        args.shift();
-        const path = args.shift();
-        process.chdir(path);
-    }
+const longParams = {
+    help: true,
+};
 
-    const repo = openLocalRepo(".");
+const shortParams = {
+    C: "path", // change directory
+    h: true, // show help
+};
 
+async function CLI(args: string[]) {
+    const options = parseOptions({
+        long: longParams,
+        short: shortParams,
+        args: args,
+    });
+    args = options.args;
+
+    const {C} = options.short;
+    if (C) process.chdir(C);
+
+    const {help} = options.long;
+    const {h} = options.short;
     const revision = args.shift();
-    if (!revision) {
+    if (help || h || !revision) {
         process.stderr.write(`Usage:\n`);
         showHelp();
         process.exit(1);
     }
+
+    const repo = openLocalRepo(".");
 
     const obj = await repo.getObject(revision);
     let {oid, type} = obj;
@@ -38,7 +54,7 @@ export async function execute(args: string[], _options: any) {
     const root = await repo.getTree(oid);
 
     if (!args.length) {
-        return showEnties(root, "");
+        return showEnties(root);
     }
 
     for (const path of args) {
@@ -52,9 +68,11 @@ export async function execute(args: string[], _options: any) {
     }
 }
 
-async function showEnties(tree: GCF.Tree, path?: string) {
+export async function showEnties(tree: GCF.Tree, path?: string) {
     if (path) {
         tree = await tree.getTree(path);
+    } else {
+        path = "";
     }
 
     let entries: GCF.Entry[] = await tree.getEntries();
@@ -71,6 +89,8 @@ function showEntry(entry: GCF.Entry, base: string) {
     process.stdout.write(`${mode} ${typeName} ${entry.oid}\t${base}${entry.name}\n`);
 }
 
-export function showHelp() {
+function showHelp() {
     process.stderr.write(`  git-js [-C path] ls-tree [<options>] <tree-ish> [<path>...]\n`);
 }
+
+if (!module.parent) CLI(process.argv.slice(2)).catch(console.error);

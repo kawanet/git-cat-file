@@ -5,11 +5,13 @@ cd $(dirname $0)/..
 cd repo/repo1
 
 test() {
-  echo "$ git $*" >&2
-  git $* | tee git-native.log || exit 1
+  cmd=$1
+  shift
+  echo "$ git $cmd $*" >&2
+  git $cmd $* | tee git-native.log || exit 1
   echo "" >&2
-  echo "$ node git-js $*" >&2
-  node ../../bin/git-js $* | tee git-js.log || exit 2
+  echo "$ node git-$cmd-js $*" >&2
+  node ../../bin/git-$cmd-js $* | tee git-js.log || exit 2
   echo "" >&2
   diff git-native.log git-js.log || exit 3
 }
