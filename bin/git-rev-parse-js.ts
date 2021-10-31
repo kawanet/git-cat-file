@@ -52,7 +52,7 @@ async function CLI(args: string[]) {
 }
 
 function showHelp() {
-    process.stderr.write(`  git-js [-C path] rev-parse <args>...\n`);
+    process.stderr.write(`  git-rev-parse-js [-C path] <args>...\n`);
 }
 
 if (!module.parent) CLI(process.argv.slice(2)).catch(console.error);

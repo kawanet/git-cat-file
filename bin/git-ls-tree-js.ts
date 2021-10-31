@@ -92,7 +92,7 @@ function showEntry(entry: GCF.Entry, base: string) {
 }
 
 function showHelp() {
-    process.stderr.write(`  git-js [-C path] ls-tree [<options>] <tree-ish> [<path>...]\n`);
+    process.stderr.write(`  git-ls-tree-js [-C path] [<options>] <tree-ish> [<path>...]\n`);
 }
 
 if (!module.parent) CLI(process.argv.slice(2)).catch(console.error);

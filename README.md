@@ -23,12 +23,18 @@ catFile("HEAD", "path/to/file.txt");
 ## CLI
 
 ```sh
-./node_modules/.bin/git-js
-
 Usage:
-  git-js [-C path] cat-file [-t | -p] <object>
-  git-js [-C path] ls-tree [<options>] <tree-ish> [<path>...]
-  git-js [-C path] rev-parse <args>...
+  git-cat-file-js [-C path] [-t | -p] <object>
+  git-ls-tree-js [-C path] [<options>] <tree-ish> [<path>...]
+  git-rev-parse-js [-C path] <args>...
+```
+
+```sh
+npm install git-cat-file
+export PATH=node_modules/.bin:$PATH
+git cat-file-js [-t | -p] <object>
+git ls-tree-js [<options>] <tree-ish> [<path>...]
+git rev-parse-js <args>...
 ```
 
 ## LINKS
