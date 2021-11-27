@@ -101,7 +101,7 @@ export class Ref {
 
     private async findRef(name: string): Promise<string> {
         // loose ref
-        const ref = this.readFirstLine(name);
+        const ref = await this.readFirstLine(name);
         if (ref) return ref;
 
         // packed ref

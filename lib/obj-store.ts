@@ -32,7 +32,7 @@ export class ObjStore {
         }
 
         // packed object
-        const list = await this.getPackList();
+        const list = await this.getPackList() || [];
         for (const pack of list) {
             const obj = await pack.getObject(object_id, this);
             if (obj) return obj;
@@ -48,7 +48,7 @@ export class ObjStore {
 
         // packed object
         {
-            const packs = await this.getPackList();
+            const packs = await this.getPackList() || [];
             for (const pack of packs) {
                 const items = await pack.findAll(object_id);
                 if (!items) continue;
