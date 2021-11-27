@@ -115,7 +115,7 @@ export class Ref {
     }
 
     private readTextFile = shortCache((name: string): Promise<string> => {
-        const path = `${this.root}/.git/${name}`;
+        const path = `${this.root}/${name}`;
         // console.warn(`readFile: ${path}`);
         return fs.readFile(path, "utf-8");
     });

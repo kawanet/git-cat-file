@@ -77,7 +77,7 @@ export class ObjStore {
     findCommitId = shortCache((commit_id: string): Promise<string> => this.ref.findCommitId(commit_id, this));
 
     protected getPackList = shortCache(async (): Promise<Pack[]> => {
-        const base = `${this.root}/.git/objects/pack/`;
+        const base = `${this.root}/objects/pack/`;
 
         // console.warn(`readdir: ${base}`);
         let names: string[] = await fs.readdir(base).catch(_ => null);

@@ -14,7 +14,7 @@ export class Loose {
         //
     }
 
-    private readdir = shortCache((first: string) => fs.readdir(`${this.root}/.git/objects/${first}`));
+    private readdir = shortCache((first: string) => fs.readdir(`${this.root}/objects/${first}`));
 
     async findAll(object_id: string): Promise<string[]> {
         const first = object_id.slice(0, 2);
@@ -28,7 +28,7 @@ export class Loose {
     async getObject(oid: string): Promise<GCF.IObject> {
         const first = oid.slice(0, 2);
         const rest = oid.slice(2);
-        const obj = new LooseObject(`${this.root}/.git/objects/${first}/${rest}`);
+        const obj = new LooseObject(`${this.root}/objects/${first}/${rest}`);
         const type = await obj.getType();
         const data = await obj.getData();
         return {oid, type, data};
