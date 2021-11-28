@@ -12,7 +12,7 @@ test: all test-prepare
 
 test-prepare: repo/repo1/.git
 
-repo/repo1/.git:
+repo/repo1/.git: bin/git-cat-file-js.js
 	sh ./test/repo1-prepare.sh
 
 ./node_modules/.bin/tsc:
@@ -20,6 +20,9 @@ repo/repo1/.git:
 
 ./node_modules/.bin/mocha:
 	npm install
+
+bin/%.js: bin/%.ts ./node_modules/.bin/tsc
+	./node_modules/.bin/tsc -p .
 
 lib/%.js: lib/%.ts ./node_modules/.bin/tsc
 	./node_modules/.bin/tsc -p .
