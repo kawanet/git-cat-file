@@ -17,9 +17,9 @@ describe(TITLE, () => {
 
     it(`Commit`, async () => {
         const commit = await repo.getCommit("HEAD");
-        assert.equal(await commit.getMessage(), "Empty\n");
+        assert.equal(commit.getMessage(), "Empty\n");
 
-        HEAD = await commit.getId();
+        HEAD = commit.getId();
         assert.equal(typeof HEAD, "string");
         assert.equal(HEAD?.length, 40);
 
@@ -34,7 +34,7 @@ describe(TITLE, () => {
 
     it(`Tree`, async () => {
         const commit = await repo.getCommit(HEAD);
-        const treeId = await commit.getMeta("tree");
+        const treeId = commit.getMeta("tree");
         assert.equal(typeof treeId, "string");
 
         const tree = await repo.getTree(treeId);

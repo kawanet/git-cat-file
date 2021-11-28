@@ -2,7 +2,7 @@
  * https://github.com/kawanet/git-cat-file
  */
 
-export declare module GCF {
+export declare namespace GCF {
     type ObjType = "blob" | "commit" | "tag" | "tree";
 
     interface Repo {
@@ -23,11 +23,11 @@ export declare module GCF {
     }
 
     interface Commit {
-        getId(): Promise<string>;
+        getId(): string;
 
-        getMeta(key: keyof CommitMeta): Promise<string>;
+        getMeta(key: keyof CommitMeta): string;
 
-        getMessage(): Promise<string>;
+        getMessage(): string;
 
         getTree(): Promise<Tree>;
 

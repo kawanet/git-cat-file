@@ -44,7 +44,7 @@ async function CLI(args: string[]) {
 
     if (type === "commit") {
         const commit = await repo.getCommit(oid);
-        oid = await commit.getMeta("tree");
+        oid = commit.getMeta("tree");
         const obj = await repo.getObject(oid);
         type = obj.type;
     }

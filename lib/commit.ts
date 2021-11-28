@@ -17,11 +17,11 @@ export class Commit implements GCF.Commit {
         }
     }
 
-    async getId(): Promise<string> {
+    getId(): string {
         return this.obj.oid;
     }
 
-    private async parseMeta(): Promise<void> {
+    private parseMeta(): void {
         if (this.meta) return;
 
         const {data} = this.obj;
@@ -50,18 +50,18 @@ export class Commit implements GCF.Commit {
         this.message = message;
     }
 
-    async getMeta(key: keyof GCF.CommitMeta): Promise<string> {
-        await this.parseMeta();
+    getMeta(key: keyof GCF.CommitMeta): string {
+        this.parseMeta();
         return this.meta[key];
     }
 
-    async getMessage(): Promise<string> {
-        await this.parseMeta();
+    getMessage(): string {
+        this.parseMeta();
         return this.message;
     }
 
     async getTree(): Promise<GCF.Tree> {
-        const oid = await this.getMeta("tree");
+        const oid = this.getMeta("tree");
         const obj = await this.store.getObject(oid);
         return new Tree(obj, this.store);
     }
