@@ -50,7 +50,7 @@ async function CLI(args: string[]) {
     }
 
     if (type !== "tree") {
-        throw new Error(`Invalid tree-ish: ${revision} (${type})`);
+        throw new TypeError(`Invalid tree-ish: ${revision} (${type})`);
     }
 
     const root = await repo.getTree(oid);

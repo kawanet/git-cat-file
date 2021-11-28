@@ -44,7 +44,7 @@ class FileMode implements GCF.FileMode {
                 break;
 
             default:
-                throw new TypeError(`Invalid mode: ${mode}`);
+                throw new TypeError(`Unknown mode: ${mode ? mode.toString(8) : mode}`);
         }
     }
 

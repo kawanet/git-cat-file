@@ -12,7 +12,7 @@ const toHex = (buf: Buffer) => buf.toString("hex").replace(/(\w.)(?=\w)/g, "$1 "
 
 export async function readPackIndex(path: string): Promise<PackIndex> {
     path = path.replace(/\.pack$/, ".idx");
-    if (!/\.idx$/.test(path)) throw Error(`Invalid pack index: ${path}`);
+    if (!/\.idx$/.test(path)) throw TypeError(`Invalid pack index file: ${path}`);
     const data = await fs.readFile(path);
     return parsePackIndex(data);
 }

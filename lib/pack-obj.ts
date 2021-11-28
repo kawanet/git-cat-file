@@ -58,7 +58,7 @@ export async function readPackedObject(fh: fs.FileHandle, start: number, store: 
         }
 
         if (start < baseOffset) {
-            throw new RangeError(`offset value out of bound: ${start} < ${baseOffset}`);
+            throw new TypeError(`offset value out of bound: ${start} < ${baseOffset}`);
         }
 
         // console.warn(`delta: ${start} + ${offset}`);
@@ -108,10 +108,10 @@ function applyDelta(baseData: Buffer, deltaData: Buffer): Buffer {
     // console.warn(`delta: ${toHex(deltaData.slice(0, 32))}`);
 
     const srcSize = readSize();
-    if (!srcSize) throw new Error(`Invalid source size: ${srcSize}`);
+    if (!srcSize) throw new TypeError(`Invalid source size: ${srcSize}`);
 
     const dstSize = readSize();
-    if (!dstSize) throw new Error(`Invalid dest size: ${dstSize}`);
+    if (!dstSize) throw new TypeError(`Invalid dest size: ${dstSize}`);
 
     const dstData = Buffer.alloc(dstSize);
     const deltaEnd = deltaData.length;
@@ -139,7 +139,7 @@ function applyDelta(baseData: Buffer, deltaData: Buffer): Buffer {
             deltaPos = end;
             dstPos += inst;
         } else {
-            throw Error(`unexpected delta opcode: ${inst}`);
+            throw TypeError(`unexpected delta opcode: ${inst}`);
         }
     }
 

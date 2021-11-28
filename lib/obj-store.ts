@@ -31,7 +31,7 @@ export class ObjStore {
      */
     getObject = shortCache(async (object_id: string): Promise<GCF.IObject> => {
         if (!isObjectId(object_id)) {
-            throw new Error(`Invalid object_id: ${object_id}`);
+            throw new TypeError(`Invalid object_id: ${object_id}`);
         }
 
         // packed object
