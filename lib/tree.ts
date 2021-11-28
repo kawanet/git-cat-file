@@ -7,10 +7,16 @@ import type {GCF} from "..";
 import {getFileMode} from "./file-mode";
 import type {ObjStore} from "./obj-store";
 
+const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/i.test(oid));
+
 export class Tree implements GCF.Tree {
     protected oid: string;
 
     constructor(object_id: string, protected readonly store: ObjStore) {
+        if (!isObjectId(object_id)) {
+            throw new Error(`Invalid object_id: ${object_id}`);
+        }
+
         this.oid = object_id;
     }
 

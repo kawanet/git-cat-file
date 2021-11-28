@@ -7,7 +7,8 @@ import {Commit} from "./commit";
 import {Tree} from "./tree";
 import {ObjStore} from "./obj-store";
 
-const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/.test(oid));
+const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/i.test(oid));
+const isLooseId = (oid: string) => (oid && /^[0-9a-f]{4,40}$/i.test(oid));
 
 export class Repo implements GCF.Repo {
     private readonly store: ObjStore;
@@ -25,21 +26,34 @@ export class Repo implements GCF.Repo {
             if (obj) return obj;
         }
 
+        if (isLooseId(object_id)) {
+            const oid = await this.store.findObjectId(object_id);
+            if (oid) return this.store.getObject(oid);
+        }
+
         const commit_id = await this.store.findCommitId(object_id);
-        const obj = this.store.getObject(commit_id || object_id);
-        if (!obj) throw new Error(`Object not found: ${commit_id}`);
-        return obj;
+        if (commit_id) return this.store.getObject(commit_id);
     }
 
     async getCommit(commit_id: string): Promise<GCF.Commit> {
         const obj = await this.getObject(commit_id);
-        if (obj?.type !== "commit") throw new TypeError(`Invalid type: ${commit_id} (${obj.type})`)
+        if (!obj) return;
+
+        if (obj.type !== "commit") {
+            throw new TypeError(`Invalid type: ${commit_id} (${obj.type})`)
+        }
+
         return new Commit(obj.oid, this.store);
     }
 
     async getTree(object_id: string): Promise<GCF.Tree> {
-        const obj = await this.store.getObject(object_id);
-        if (obj?.type !== "tree") throw new TypeError(`Invalid type: ${object_id} (${obj.type})`)
+        const obj = await this.getObject(object_id);
+        if (!obj) return;
+
+        if (obj.type !== "tree") {
+            throw new TypeError(`Invalid type: ${object_id} (${obj.type})`)
+        }
+
         return new Tree(obj.oid, this.store);
     }
 }

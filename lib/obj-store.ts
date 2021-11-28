@@ -14,7 +14,7 @@ import {Ref} from "./ref";
  * https://github.com/kawanet/git-cat-file
  */
 
-const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/.test(oid));
+const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/i.test(oid));
 
 export class ObjStore {
     private readonly loose: Loose;
@@ -26,6 +26,9 @@ export class ObjStore {
         this.ref = new Ref(root);
     }
 
+    /**
+     * get object with the exact objectId
+     */
     getObject = shortCache(async (object_id: string): Promise<GCF.IObject> => {
         if (!isObjectId(object_id)) {
             throw new Error(`Invalid object_id: ${object_id}`);
@@ -42,9 +45,11 @@ export class ObjStore {
         return this.loose.getObject(object_id);
     });
 
+    /**
+     * get objectId with a loose objectId
+     */
     findObjectId = shortCache(async (object_id: string): Promise<string> => {
         const index: { [oid: string]: 1 } = {};
-        // console.warn(`findObjectId: ${object_id}`);
 
         // packed object
         {

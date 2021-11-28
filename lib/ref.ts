@@ -12,7 +12,7 @@ interface RefCommit {
     commit: string;
 }
 
-const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/.test(oid));
+const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/i.test(oid));
 
 export class Ref {
     constructor(protected readonly root: string) {
