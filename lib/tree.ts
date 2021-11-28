@@ -7,22 +7,16 @@ import type {GCF} from "..";
 import {getFileMode} from "./file-mode";
 import type {ObjStore} from "./obj-store";
 
-const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/i.test(oid));
-
 export class Tree implements GCF.Tree {
-    protected oid: string;
 
-    constructor(object_id: string, protected readonly store: ObjStore) {
-        if (!isObjectId(object_id)) {
-            throw new Error(`Invalid object_id: ${object_id}`);
+    constructor(private readonly obj: GCF.IObject, protected readonly store: ObjStore) {
+        if (obj.type !== "tree") {
+            throw new TypeError(`Invalid tree object: ${obj.oid} (${obj.type})`)
         }
-
-        this.oid = object_id;
     }
 
     async getEntries(): Promise<GCF.Entry[]> {
-        const {data} = await this.store.getObject(this.oid);
-        if (data) return parseTree(data);
+        return parseTree(this.obj.data);
     }
 
     async getEntry(path: string): Promise<GCF.Entry> {
@@ -44,7 +38,9 @@ export class Tree implements GCF.Tree {
         for (const name of path.split("/")) {
             if (!name) continue;
             const {oid} = await tree.getEntry(name);
-            tree = new Tree(oid, this.store);
+            const obj = await this.store.getObject(oid);
+            if (!obj) return;
+            tree = new Tree(obj, this.store);
         }
 
         return tree;

@@ -38,22 +38,12 @@ export class Repo implements GCF.Repo {
     async getCommit(commit_id: string): Promise<GCF.Commit> {
         const obj = await this.getObject(commit_id);
         if (!obj) return;
-
-        if (obj.type !== "commit") {
-            throw new TypeError(`Invalid type: ${commit_id} (${obj.type})`)
-        }
-
-        return new Commit(obj.oid, this.store);
+        return new Commit(obj, this.store);
     }
 
     async getTree(object_id: string): Promise<GCF.Tree> {
         const obj = await this.getObject(object_id);
         if (!obj) return;
-
-        if (obj.type !== "tree") {
-            throw new TypeError(`Invalid type: ${object_id} (${obj.type})`)
-        }
-
-        return new Tree(obj.oid, this.store);
+        return new Tree(obj, this.store);
     }
 }

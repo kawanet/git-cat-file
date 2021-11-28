@@ -10,26 +10,21 @@ import type {ObjStore} from "./obj-store";
 export class Commit implements GCF.Commit {
     private meta: GCF.CommitMeta;
     private message: string;
-    private oid: string;
 
-    constructor(commit_id: string, protected readonly store: ObjStore) {
-        this.oid = commit_id;
+    constructor(private readonly obj: GCF.IObject, protected readonly store: ObjStore) {
+        if (obj.type !== "commit") {
+            throw new TypeError(`Invalid commit object: ${obj.oid} (${obj.type})`)
+        }
     }
 
     async getId(): Promise<string> {
-        return this.oid;
+        return this.obj.oid;
     }
 
     private async parseMeta(): Promise<void> {
         if (this.meta) return;
 
-        const {oid, type, data} = await this.store.getObject(this.oid);
-        this.oid = oid;
-
-        if (type !== "commit") {
-            throw new Error(`Invalid type: ${type}`);
-        }
-
+        const {data} = this.obj;
         const meta = this.meta = {} as GCF.CommitMeta;
         const lines = data.toString().split(/\r?\n/);
         let headerMode = true;
@@ -67,7 +62,8 @@ export class Commit implements GCF.Commit {
 
     async getTree(): Promise<GCF.Tree> {
         const oid = await this.getMeta("tree");
-        return new Tree(oid, this.store);
+        const obj = await this.store.getObject(oid);
+        return new Tree(obj, this.store);
     }
 
     async getFile(path: string): Promise<GCF.File> {
