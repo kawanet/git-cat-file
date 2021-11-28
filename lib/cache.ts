@@ -5,9 +5,9 @@
 import {queueFactory} from "async-cache-queue";
 
 export const shortCache = queueFactory({
-    cache: 5000, // 5 seconds
+    cache: 1000, // 1 seconds
     negativeCache: 1000, // 1 second
-    maxItems: 100,
+    maxItems: 1000,
 });
 
 export const longCache = queueFactory({
