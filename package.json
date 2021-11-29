@@ -25,6 +25,14 @@
     "lib/*.js",
     "types/*.d.ts"
   ],
+  "keywords": [
+    "cat-file",
+    "git",
+    "gitlab",
+    "ls-tree",
+    "repository",
+    "rev-parse"
+  ],
   "license": "MIT",
   "main": "lib/index.js",
   "repository": {
@@ -33,6 +41,7 @@
   },
   "scripts": {
     "build": "./node_modules/.bin/tsc -p .",
+    "fixpack": "fixpack",
     "prepack": "npm run build && npm test",
     "test": "make test"
   },
