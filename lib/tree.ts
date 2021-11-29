@@ -25,6 +25,7 @@ export class Tree implements GCF.Tree {
         if (/\//.test(path)) {
             const names = path.split("/");
             path = names.pop();
+            if (!path) path = names.pop();
             tree = await this.getTree(names.join("/"));
         }
 
