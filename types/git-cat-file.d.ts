@@ -35,6 +35,8 @@ export declare namespace GCF {
     }
 
     interface Tree {
+        getId(): string;
+
         getEntries(): Promise<Entry[]>;
 
         getEntry(path: string): Promise<Entry>;

@@ -15,6 +15,10 @@ export class Tree implements GCF.Tree {
         }
     }
 
+    getId(): string {
+        return this.obj.oid;
+    }
+
     async getEntries(): Promise<GCF.Entry[]> {
         return parseTree(this.obj.data);
     }
