@@ -1,7 +1,7 @@
 {
   "name": "git-cat-file",
   "description": "Pure JavaScript `git cat-file -p` for node.js",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "@kawanet",
   "bin": {
     "git-cat-file-js": "bin/git-cat-file-js.js",
