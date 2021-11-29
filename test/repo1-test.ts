@@ -11,7 +11,7 @@ describe(TITLE, () => {
     let HEAD: string;
 
     it(`Repo`, async () => {
-        repo = openLocalRepo(`${BASE}/repo/repo1`);
+        repo = openLocalRepo(`${BASE}/repo/repo1/.git`);
         assert.ok(repo);
     });
 

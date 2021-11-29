@@ -16,7 +16,7 @@ describe(TITLE, () => {
     });
 
     it(`Commit`, async () => {
-        const repo = openLocalRepo(`${BASE}/repo/repo1`);
+        const repo = openLocalRepo(`${BASE}/repo/repo1/.git`);
         assert.ok(repo);
 
         let commit = await repo.getCommit("not-found");
@@ -30,7 +30,7 @@ describe(TITLE, () => {
     });
 
     it(`Tree`, async () => {
-        const repo = openLocalRepo(`${BASE}/repo/repo1`);
+        const repo = openLocalRepo(`${BASE}/repo/repo1/.git`);
         assert.ok(repo);
 
         let tree = await repo.getTree("000000");

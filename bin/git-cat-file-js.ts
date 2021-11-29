@@ -5,6 +5,8 @@
  */
 
 import {openLocalRepo} from "..";
+import {promises as fs} from "fs";
+
 import {showEnties} from "./git-ls-tree-js";
 import {parseOptions} from "../lib/cli-lib";
 
@@ -29,6 +31,10 @@ async function CLI(args: string[]) {
 
     const {C} = options.short;
     if (C) process.chdir(C);
+
+    if (await fs.readdir(".git").catch(_ => null)) {
+        process.chdir(".git");
+    }
 
     const {help} = options.long;
     const {h, t, p} = options.short;

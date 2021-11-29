@@ -6,6 +6,8 @@
 
 import type {GCF} from "..";
 import {openLocalRepo} from "..";
+import {promises as fs} from "fs";
+
 import {parseOptions} from "../lib/cli-lib";
 
 const longParams = {
@@ -27,6 +29,10 @@ async function CLI(args: string[]) {
 
     const {C} = options.short;
     if (C) process.chdir(C);
+
+    if (await fs.readdir(".git").catch(_ => null)) {
+        process.chdir(".git");
+    }
 
     const {help} = options.long;
     const {h} = options.short;

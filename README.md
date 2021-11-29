@@ -11,7 +11,7 @@ Pure JavaScript `git cat-file -p` for node.js
 const {openLocalRepo} = require("git-cat-file");
 
 async function catFile(revision, path) {
-  const repo = openLocalRepo(".");
+  const repo = openLocalRepo("repository/.git");
   const commit = await repo.getCommit(revision);
   const file = await commit.getFile(path);
   process.stdout.write(file.data);
@@ -29,6 +29,8 @@ Usage:
   git-rev-parse-js [-C path] <args>...
 ```
 
+Bundled CLI commands are also available via the `git` command. 
+
 ```sh
 npm install git-cat-file
 export PATH=node_modules/.bin:$PATH
@@ -41,3 +43,4 @@ git rev-parse-js <args>...
 
 - https://github.com/kawanet/git-cat-file
 - https://www.npmjs.com/package/git-cat-file
+- https://www.npmjs.com/package/serve-static-git

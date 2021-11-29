@@ -14,9 +14,7 @@ export class Repo implements GCF.Repo {
     private readonly store: ObjStore;
 
     constructor(path: string) {
-        const isBare = /\.git\/*$/.test(path);
-        path = path.replace(/\/$/, "");
-        if (!isBare) path += "/.git";
+        path = path.replace(/\/+$/, "");
         this.store = new ObjStore(path);
     }
 
