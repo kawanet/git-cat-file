@@ -15,6 +15,10 @@ export class Tree implements GCF.Tree {
         }
     }
 
+    getId(): string {
+        return this.obj.oid;
+    }
+
     async getEntries(): Promise<GCF.Entry[]> {
         return parseTree(this.obj.data);
     }
@@ -25,8 +29,10 @@ export class Tree implements GCF.Tree {
         if (/\//.test(path)) {
             const names = path.split("/");
             path = names.pop();
+            if (!path) path = names.pop();
             tree = await this.getTree(names.join("/"));
         }
+        if (!tree) return;
 
         const list = await tree.getEntries();
         return list.filter(item => item.name === path).shift();
@@ -37,8 +43,9 @@ export class Tree implements GCF.Tree {
 
         for (const name of path.split("/")) {
             if (!name) continue;
-            const {oid} = await tree.getEntry(name);
-            const obj = await this.store.getObject(oid);
+            const entry = await tree.getEntry(name);
+            if (!entry) return;
+            const obj = await this.store.getObject(entry.oid);
             if (!obj) return;
             tree = new Tree(obj, this.store);
         }

@@ -44,5 +44,8 @@ describe(TITLE, () => {
 
         const entry = await tree.getEntry("not-found");
         assert.equal(entry, undefined);
+
+        const entry2 = await tree.getEntry("not-found/not-found.txt");
+        assert.equal(entry2, undefined);
     });
 });

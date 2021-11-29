@@ -40,6 +40,8 @@ describe(TITLE, () => {
         const tree = await repo.getTree(treeId);
         assert.ok(Array.isArray(await tree.getEntries()));
 
+        assert.equal(typeof tree.getId(), "string");
+
         const entry = await tree.getEntry(`bar/buz.txt`);
         assert.equal(entry.name, "buz.txt");
         assert.equal(entry.mode.isFile, true);

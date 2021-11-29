@@ -71,7 +71,7 @@ async function CLI(args: string[]) {
         } else {
             const base = path.replace(/[^\/]+$/, "");
             const entry = await root.getEntry(path);
-            await showEntry(entry, base);
+            if (entry) showEntry(entry, base);
         }
     }
 }
