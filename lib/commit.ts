@@ -63,6 +63,12 @@ export class Commit implements GCF.Commit {
         }
     }
 
+    getDate(): Date {
+        const author = this.getMeta("author") || this.getMeta("committer");
+        const match = author?.match(/\s+(\d+)(\s+[+\-]\d+)?$/);
+        if (match) return new Date(+match[1] * 1000);
+    }
+
     getMessage(): string {
         this.parseMeta();
         return this.message;

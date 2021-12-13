@@ -33,6 +33,14 @@ describe(TITLE, () => {
 
         const parents = await commit.getParents();
         assert.equal(parents.length, 1);
+
+        const author = commit.getMeta("author");
+        assert.ok(author);
+
+        const date = commit.getDate();
+        assert.ok(date instanceof Date);
+        assert.ok(+date < +Date.now()); // past
+        assert.ok(date.getFullYear() >= 2000);
     });
 
     it(`Tree`, async () => {

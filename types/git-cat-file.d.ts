@@ -27,6 +27,8 @@ export declare namespace GCF {
 
         getMeta(key: keyof CommitMeta): string;
 
+        getDate(): Date;
+
         getMessage(): string;
 
         getTree(): Promise<Tree>;
