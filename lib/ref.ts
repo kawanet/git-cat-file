@@ -3,9 +3,11 @@
  */
 
 import {promises as fs} from "fs";
+import type {GCF} from "..";
 
 import {shortCache} from "./cache";
 import type {ObjStore} from "./obj-store";
+import {Commit} from "./commit";
 
 interface RefCommit {
     ref: string;
@@ -24,11 +26,46 @@ export class Ref {
             throw new Error(`Invalid revision: ${revision}`);
         }
 
+        let ancestry: string[];
+        revision = revision.replace(/([~^]\d*)+$/, match => {
+            ancestry = match.split(/([~^]\d*)/).filter(v => v);
+            return "";
+        });
+
         if (revision === "@") {
             revision = "HEAD";
         }
 
-        const orig = revision;
+        const id = await this.findId(revision);
+        if (id && !ancestry) return id;
+
+        const obj = await this.getRawCommit(id || revision, store);
+        if (!obj) return;
+        if (obj && !ancestry) return obj.oid;
+
+        // https://git-scm.com/book/en/v2/Git-Tools-Revision-Selection#_ancestry_references
+        // HEAD^
+        // HEAD~2
+        let commit: GCF.Commit = new Commit(obj, store);
+        for (const gen of ancestry) {
+            const mark = gen[0];
+            const num = gen.substring(1) || "1";
+
+            const tilde = (mark === "~") && +num || 1;
+            const caret = (mark === "^") && +num || 1;
+
+            for (let i = 0; i < tilde; i++) {
+                const parents = await commit.getParents();
+                if (!parents) return;
+                commit = parents[caret - 1];
+                if (!commit) return;
+            }
+        }
+
+        return commit.getId();
+    }
+
+    private async findId(revision: string): Promise<string> {
         while (revision) {
             revision = await this.searchRef(revision);
             if (!revision) break;
@@ -42,13 +79,14 @@ export class Ref {
                 return revision; // commit
             }
         }
+    }
 
-        const object_id = await store.findObjectId(orig);
+    private async getRawCommit(revision: string, store: ObjStore): Promise<GCF.IObject> {
+        const object_id = await store.findObjectId(revision);
         if (!object_id) return; // not found
 
         const obj = await store.getObject(object_id);
-        const {type} = obj;
-        if (type === "commit") return object_id;
+        if (obj.type === "commit") return obj;
     }
 
     private readPackedRefIndex = shortCache(async () => {

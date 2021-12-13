@@ -46,4 +46,10 @@ test cat-file -p $blob
 short=$(echo $commit | cut -c 1-5)
 test rev-parse $short
 
+test rev-parse HEAD~
+test rev-parse HEAD~~
+test rev-parse HEAD~2
+test rev-parse HEAD^
+test rev-parse HEAD^^
+
 echo "[PASS]"

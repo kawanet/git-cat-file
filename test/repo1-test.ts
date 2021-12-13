@@ -30,6 +30,17 @@ describe(TITLE, () => {
         const file = await commit.getFile(`foo.txt`);
         assert.equal(file.mode.isFile, true);
         assert.equal(file.data + "", "Foo\n");
+
+        const parents = await commit.getParents();
+        assert.equal(parents.length, 1);
+
+        const author = commit.getMeta("author");
+        assert.ok(author);
+
+        const date = commit.getDate();
+        assert.ok(date instanceof Date);
+        assert.ok(+date < +Date.now()); // past
+        assert.ok(date.getFullYear() >= 2000);
     });
 
     it(`Tree`, async () => {

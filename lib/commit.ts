@@ -7,8 +7,10 @@ import type {GCF} from "..";
 import {Tree} from "./tree";
 import type {ObjStore} from "./obj-store";
 
+type CommitMetaA = { [key in keyof GCF.CommitMeta]: string[] };
+
 export class Commit implements GCF.Commit {
-    private meta: GCF.CommitMeta;
+    private meta: CommitMetaA;
     private message: string;
 
     constructor(private readonly obj: GCF.IObject, protected readonly store: ObjStore) {
@@ -25,16 +27,18 @@ export class Commit implements GCF.Commit {
         if (this.meta) return;
 
         const {data} = this.obj;
-        const meta = this.meta = {} as GCF.CommitMeta;
+        const meta = this.meta = {} as CommitMetaA;
         const lines = data.toString().split(/\r?\n/);
         let headerMode = true;
         let message: string;
 
         for (const line of lines) {
             if (headerMode) {
-                const [key, val] = splitBySpace(line);
-                if (key) {
-                    meta[key as keyof GCF.CommitMeta] = val;
+                const [key, val] = splitBySpace(line) as [keyof CommitMetaA, string];
+                if (meta[key]) {
+                    meta[key].push(val)
+                } else if (key) {
+                    meta[key] = [val];
                 } else {
                     headerMode = false;
                 }
@@ -52,7 +56,17 @@ export class Commit implements GCF.Commit {
 
     getMeta(key: keyof GCF.CommitMeta): string {
         this.parseMeta();
-        return this.meta[key];
+        const array = this.meta[key];
+        if (array) {
+            if (array.length > 1) return array.join(" ");
+            return array[0];
+        }
+    }
+
+    getDate(): Date {
+        const author = this.getMeta("author") || this.getMeta("committer");
+        const match = author?.match(/\s+(\d+)(\s+[+\-]\d+)?$/);
+        if (match) return new Date(+match[1] * 1000);
     }
 
     getMessage(): string {
@@ -73,11 +87,23 @@ export class Commit implements GCF.Commit {
 
         const {oid, mode} = entry;
         const obj = await this.store.getObject(oid);
-        const {type} = obj;
-        if (type !== "blob") return;
+        if (obj.type !== "blob") return;
 
         const {data} = obj;
         return {oid, mode, data};
+    }
+
+    async getParents(): Promise<GCF.Commit[]> {
+        this.parseMeta();
+        const {parent} = this.meta;
+        if (!parent) return;
+
+        const array: GCF.Commit[] = [];
+        for (const oid of parent) {
+            const obj = await this.store.getObject(oid);
+            if (obj) array.push(new Commit(obj, this.store));
+        }
+        return array;
     }
 }
 

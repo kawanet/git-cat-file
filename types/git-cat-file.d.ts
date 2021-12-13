@@ -27,11 +27,15 @@ export declare namespace GCF {
 
         getMeta(key: keyof CommitMeta): string;
 
+        getDate(): Date;
+
         getMessage(): string;
 
         getTree(): Promise<Tree>;
 
         getFile(path: string): Promise<File>;
+
+        getParents(): Promise<Commit[]>;
     }
 
     interface Tree {
