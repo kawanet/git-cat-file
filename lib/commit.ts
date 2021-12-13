@@ -81,11 +81,23 @@ export class Commit implements GCF.Commit {
 
         const {oid, mode} = entry;
         const obj = await this.store.getObject(oid);
-        const {type} = obj;
-        if (type !== "blob") return;
+        if (obj.type !== "blob") return;
 
         const {data} = obj;
         return {oid, mode, data};
+    }
+
+    async getParents(): Promise<GCF.Commit[]> {
+        this.parseMeta();
+        const {parent} = this.meta;
+        if (!parent) return;
+
+        const array: GCF.Commit[] = [];
+        for (const oid of parent) {
+            const obj = await this.store.getObject(oid);
+            if (obj) array.push(new Commit(obj, this.store));
+        }
+        return array;
     }
 }
 

@@ -32,6 +32,8 @@ export declare namespace GCF {
         getTree(): Promise<Tree>;
 
         getFile(path: string): Promise<File>;
+
+        getParents(): Promise<Commit[]>;
     }
 
     interface Tree {
