@@ -24,4 +24,4 @@ git commit -m Corge
 touch empty.txt
 git add empty.txt
 git commit -m Empty
-git log
+git log --format=reference | cat

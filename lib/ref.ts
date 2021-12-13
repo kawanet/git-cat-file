@@ -7,6 +7,7 @@ import type {GCF} from "..";
 
 import {shortCache} from "./cache";
 import type {ObjStore} from "./obj-store";
+import {Commit} from "./commit";
 
 interface RefCommit {
     ref: string;
@@ -25,15 +26,43 @@ export class Ref {
             throw new Error(`Invalid revision: ${revision}`);
         }
 
+        let ancestry: string[];
+        revision = revision.replace(/([~^]\d*)+$/, match => {
+            ancestry = match.split(/([~^]\d*)/).filter(v => v);
+            return "";
+        });
+
         if (revision === "@") {
             revision = "HEAD";
         }
 
         const id = await this.findId(revision);
-        if (id) return id;
+        if (id && !ancestry) return id;
 
-        const commit = await this.getRawCommit(revision, store);
-        if (commit) return commit.oid;
+        const obj = await this.getRawCommit(id || revision, store);
+        if (!obj) return;
+        if (obj && !ancestry) return obj.oid;
+
+        // https://git-scm.com/book/en/v2/Git-Tools-Revision-Selection#_ancestry_references
+        // HEAD^
+        // HEAD~2
+        let commit: GCF.Commit = new Commit(obj, store);
+        for (const gen of ancestry) {
+            const mark = gen[0];
+            const num = gen.substring(1) || "1";
+
+            const tilde = (mark === "~") && +num || 1;
+            const caret = (mark === "^") && +num || 1;
+
+            for (let i = 0; i < tilde; i++) {
+                const parents = await commit.getParents();
+                if (!parents) return;
+                commit = parents[caret - 1];
+                if (!commit) return;
+            }
+        }
+
+        return commit.getId();
     }
 
     private async findId(revision: string): Promise<string> {

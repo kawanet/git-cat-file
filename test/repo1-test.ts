@@ -30,6 +30,9 @@ describe(TITLE, () => {
         const file = await commit.getFile(`foo.txt`);
         assert.equal(file.mode.isFile, true);
         assert.equal(file.data + "", "Foo\n");
+
+        const parents = await commit.getParents();
+        assert.equal(parents.length, 1);
     });
 
     it(`Tree`, async () => {
