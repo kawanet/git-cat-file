@@ -3,6 +3,7 @@
  */
 
 import {promises as fs} from "fs";
+import type {GCF} from "..";
 
 import {shortCache} from "./cache";
 import type {ObjStore} from "./obj-store";
@@ -28,7 +29,14 @@ export class Ref {
             revision = "HEAD";
         }
 
-        const orig = revision;
+        const id = await this.findId(revision);
+        if (id) return id;
+
+        const commit = await this.getRawCommit(revision, store);
+        if (commit) return commit.oid;
+    }
+
+    private async findId(revision: string): Promise<string> {
         while (revision) {
             revision = await this.searchRef(revision);
             if (!revision) break;
@@ -42,13 +50,14 @@ export class Ref {
                 return revision; // commit
             }
         }
+    }
 
-        const object_id = await store.findObjectId(orig);
+    private async getRawCommit(revision: string, store: ObjStore): Promise<GCF.IObject> {
+        const object_id = await store.findObjectId(revision);
         if (!object_id) return; // not found
 
         const obj = await store.getObject(object_id);
-        const {type} = obj;
-        if (type === "commit") return object_id;
+        if (obj.type === "commit") return obj;
     }
 
     private readPackedRefIndex = shortCache(async () => {
