@@ -4,16 +4,20 @@ all: lib/index.js
 
 clean:
 	/bin/rm -f bin/*.js bin/cmd/*.js lib/*.js test/*.js
-	/bin/rm -fr repo/repo1
+	/bin/rm -fr repo/repo?/
 
 test: all test-prepare
 	sh ./test/repo1-test.sh
+	sh ./test/repo2-test.sh
 	make mocha
 
-test-prepare: repo/repo1/.git
+test-prepare: repo/repo1/.git repo/repo2/.git
 
 repo/repo1/.git: bin/git-cat-file-js.js
 	sh ./test/repo1-prepare.sh
+
+repo/repo2/.git: bin/git-cat-file-js.js
+	sh ./test/repo2-prepare.sh
 
 ./node_modules/.bin/tsc:
 	npm install
