@@ -7,8 +7,10 @@ import type {GCF} from "..";
 import {Tree} from "./tree";
 import type {ObjStore} from "./obj-store";
 
+type CommitMetaA = { [key in keyof GCF.CommitMeta]: string[] };
+
 export class Commit implements GCF.Commit {
-    private meta: GCF.CommitMeta;
+    private meta: CommitMetaA;
     private message: string;
 
     constructor(private readonly obj: GCF.IObject, protected readonly store: ObjStore) {
@@ -25,16 +27,18 @@ export class Commit implements GCF.Commit {
         if (this.meta) return;
 
         const {data} = this.obj;
-        const meta = this.meta = {} as GCF.CommitMeta;
+        const meta = this.meta = {} as CommitMetaA;
         const lines = data.toString().split(/\r?\n/);
         let headerMode = true;
         let message: string;
 
         for (const line of lines) {
             if (headerMode) {
-                const [key, val] = splitBySpace(line);
-                if (key) {
-                    meta[key as keyof GCF.CommitMeta] = val;
+                const [key, val] = splitBySpace(line) as [keyof CommitMetaA, string];
+                if (meta[key]) {
+                    meta[key].push(val)
+                } else if (key) {
+                    meta[key] = [val];
                 } else {
                     headerMode = false;
                 }
@@ -52,7 +56,11 @@ export class Commit implements GCF.Commit {
 
     getMeta(key: keyof GCF.CommitMeta): string {
         this.parseMeta();
-        return this.meta[key];
+        const array = this.meta[key];
+        if (array) {
+            if (array.length > 1) return array.join(" ");
+            return array[0];
+        }
     }
 
     getMessage(): string {
