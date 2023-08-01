@@ -9,6 +9,7 @@ clean:
 test: all test-prepare
 	sh ./test/repo1-test.sh
 	sh ./test/repo2-test.sh
+	sh ./test/repo3-test.sh
 	make mocha
 
 test-prepare: repo/repo1/.git repo/repo2/.git

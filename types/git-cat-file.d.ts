@@ -38,6 +38,16 @@ export declare namespace GCF {
         getParents(): Promise<Commit[]>;
     }
 
+    interface Tag {
+        getId(): string;
+
+        getMeta(key: keyof TagMeta): string;
+
+        getDate(): Date;
+
+        getMessage(): string;
+    }
+
     interface Tree {
         getId(): string;
 
@@ -66,6 +76,13 @@ export declare namespace GCF {
         author: string;
         committer: string;
         encoding: string;
+    }
+
+    interface TagMeta {
+        object: string;
+        type: string;
+        tagger: string;
+        tag: string;
     }
 
     interface File {

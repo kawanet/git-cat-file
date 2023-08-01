@@ -8,6 +8,7 @@ import type {GCF} from "..";
 import {shortCache} from "./cache";
 import type {ObjStore} from "./obj-store";
 import {Commit} from "./commit";
+import {Tag} from "./tag";
 
 interface RefCommit {
     ref: string;
@@ -85,7 +86,14 @@ export class Ref {
         const object_id = await store.findObjectId(revision);
         if (!object_id) return; // not found
 
-        const obj = await store.getObject(object_id);
+        let obj = await store.getObject(object_id);
+
+        if (obj?.type === "tag") {
+            const tag = new Tag(obj, store);
+            const object_id = tag.getMeta("object");
+            obj = await store.getObject(object_id);
+        }
+
         if (obj.type === "commit") return obj;
     }
 
