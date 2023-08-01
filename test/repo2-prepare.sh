@@ -27,5 +27,4 @@ git commit --allow-empty -m 'commit 3B'
 
 git checkout main
 git merge branch1 branch2 branch3 -m 'merged'
-rm -f
 git log --format=reference | cat
