@@ -6,6 +6,7 @@ import type {GCF} from "..";
 import {Commit} from "./commit";
 import {Tree} from "./tree";
 import {ObjStore} from "./obj-store";
+import {Tag} from "./tag";
 
 const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/i.test(oid));
 const isLooseId = (oid: string) => (oid && /^[0-9a-f]{4,40}$/i.test(oid));
@@ -34,8 +35,15 @@ export class Repo implements GCF.Repo {
     }
 
     async getCommit(commit_id: string): Promise<GCF.Commit> {
-        const obj = await this.getObject(commit_id);
+        let obj = await this.getObject(commit_id);
         if (!obj) return;
+
+        if (obj.type === "tag") {
+            const tag = new Tag(obj, this.store);
+            commit_id = tag.getMeta("object");
+            obj = await this.getObject(commit_id);
+        }
+
         return new Commit(obj, this.store);
     }
 
