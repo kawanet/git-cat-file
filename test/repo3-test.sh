@@ -19,10 +19,17 @@ test() {
 test rev-parse tag-root
 test rev-parse tag-1a
 test rev-parse tag-1b
+
 test rev-parse tag-1b^
 test rev-parse tag-1b^^
+test rev-parse tag-1b^0
+test rev-parse tag-1b^1
+
 test rev-parse tag-2a
 test rev-parse tag-2b
+
+test rev-parse tag-2b~
+test rev-parse tag-2b~0
 test rev-parse tag-2b~1
 test rev-parse tag-2b~2
 

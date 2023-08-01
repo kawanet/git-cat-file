@@ -50,15 +50,16 @@ export class Ref {
         let commit: GCF.Commit = new Commit(obj, store);
         for (const gen of ancestry) {
             const mark = gen[0];
-            const num = gen.substring(1) || "1";
+            const num = gen.substring(1);
 
-            const tilde = (mark === "~") && +num || 1;
-            const caret = (mark === "^") && +num || 1;
+            const count = (num === "0") ? 0 : (+num || 1);
+            const tilde = (mark === "~") ? count : 1;
+            const caret = (mark === "^") ? count : 1;
 
             for (let i = 0; i < tilde; i++) {
                 const parents = await commit.getParents();
                 if (!parents) return;
-                commit = parents[caret - 1];
+                if (caret) commit = parents[caret - 1];
                 if (!commit) return;
             }
         }
