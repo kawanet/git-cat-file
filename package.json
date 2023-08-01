@@ -1,7 +1,7 @@
 {
   "name": "git-cat-file",
   "description": "Pure JavaScript `git cat-file -p` for node.js",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "@kawanet",
   "bin": {
     "git-cat-file-js": "bin/git-cat-file-js.js",
@@ -9,14 +9,14 @@
     "git-rev-parse-js": "bin/git-rev-parse-js.js"
   },
   "dependencies": {
-    "async-cache-queue": "^0.2.2",
-    "process.argv": "^0.6.0"
+    "async-cache-queue": "^0.2.6",
+    "process.argv": "^0.6.1"
   },
   "devDependencies": {
-    "@types/mocha": "^9.0.0",
-    "@types/node": "^16.11.12",
-    "mocha": "^9.1.3",
-    "typescript": "^4.5.3"
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.4.5",
+    "mocha": "^10.2.0",
+    "typescript": "^5.1.6"
   },
   "engines": {
     "node": ">= 14"

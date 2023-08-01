@@ -8,7 +8,7 @@ interface Options<L, S> {
     args: string[];
 }
 
-export function parseOptions<L, S>(input: Options<L, S>): Options<L, S> {
+export function parseOptions<L extends object, S extends object>(input: Options<L, S>): Options<L, S> {
     const argv = require("process.argv")(input.args)({});
     const args: string[] = argv["--"] || [];
 

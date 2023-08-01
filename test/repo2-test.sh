@@ -22,6 +22,7 @@ test rev-parse HEAD~
 test rev-parse HEAD~~
 test rev-parse HEAD~~~
 
+test rev-parse HEAD~0
 test rev-parse HEAD~1
 test rev-parse HEAD~2
 test rev-parse HEAD~3
@@ -30,6 +31,7 @@ test rev-parse HEAD^
 test rev-parse HEAD^^
 test rev-parse HEAD^^^
 
+test rev-parse HEAD^0
 test rev-parse HEAD^1
 test rev-parse HEAD^2
 test rev-parse HEAD^3

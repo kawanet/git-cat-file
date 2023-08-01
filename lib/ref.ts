@@ -8,6 +8,7 @@ import type {GCF} from "..";
 import {shortCache} from "./cache";
 import type {ObjStore} from "./obj-store";
 import {Commit} from "./commit";
+import {Tag} from "./tag";
 
 interface RefCommit {
     ref: string;
@@ -49,15 +50,16 @@ export class Ref {
         let commit: GCF.Commit = new Commit(obj, store);
         for (const gen of ancestry) {
             const mark = gen[0];
-            const num = gen.substring(1) || "1";
+            const num = gen.substring(1);
 
-            const tilde = (mark === "~") && +num || 1;
-            const caret = (mark === "^") && +num || 1;
+            const count = (num === "0") ? 0 : (+num || 1);
+            const tilde = (mark === "~") ? count : 1;
+            const caret = (mark === "^") ? count : 1;
 
             for (let i = 0; i < tilde; i++) {
                 const parents = await commit.getParents();
                 if (!parents) return;
-                commit = parents[caret - 1];
+                if (caret) commit = parents[caret - 1];
                 if (!commit) return;
             }
         }
@@ -85,7 +87,14 @@ export class Ref {
         const object_id = await store.findObjectId(revision);
         if (!object_id) return; // not found
 
-        const obj = await store.getObject(object_id);
+        let obj = await store.getObject(object_id);
+
+        if (obj?.type === "tag") {
+            const tag = new Tag(obj, store);
+            const object_id = tag.getMeta("object");
+            obj = await store.getObject(object_id);
+        }
+
         if (obj.type === "commit") return obj;
     }
 

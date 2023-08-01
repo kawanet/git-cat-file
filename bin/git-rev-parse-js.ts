@@ -45,8 +45,8 @@ async function CLI(args: string[]) {
 
     while (args.length) {
         const revision = args.shift();
-        const commit = await repo.getCommit(revision);
-        const commit_id = commit.getId();
+        const obj = await repo.getObject(revision);
+        const commit_id = obj?.oid;
         if (!commit_id) {
             process.stderr.write(`Invalid revision: ${revision}\n`);
             showHelp();
