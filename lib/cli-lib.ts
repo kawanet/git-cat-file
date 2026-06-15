@@ -2,33 +2,33 @@
  * https://github.com/kawanet/git-cat-file
  */
 
-import processArgv from "process.argv";
+import processArgv from "process.argv"
 
 interface Options<L, S> {
-    long: L;
-    short: S;
-    args: string[];
+    long: L
+    short: S
+    args: string[]
 }
 
 export function parseOptions<L extends object, S extends object>(input: Options<L, S>): Options<L, S> {
-    const argv = processArgv(input.args)({}) as L & {"--"?: string[]};
-    const args: string[] = argv["--"] || [];
+    const argv = processArgv(input.args)({}) as L & {"--"?: string[]}
+    const args: string[] = argv["--"] || []
 
-    const shortDef = input.short;
-    const shortParams: any = {};
+    const shortDef = input.short
+    const shortParams: any = {}
 
     while (/^-/.test(args[0])) {
-        const key = args.shift().slice(1) as keyof typeof shortDef;
+        const key = args.shift().slice(1) as keyof typeof shortDef
         if (!(key in shortDef)) {
-            shortParams.h = true;
-            break;
+            shortParams.h = true
+            break
         }
         if ("string" === typeof shortDef[key]) {
-            shortParams[key] = args.shift();
+            shortParams[key] = args.shift()
         } else {
-            shortParams[key] = true;
+            shortParams[key] = true
         }
     }
 
-    return {long: argv, short: shortParams, args};
+    return {long: argv, short: shortParams, args}
 }

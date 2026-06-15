@@ -2,70 +2,70 @@
  * https://github.com/kawanet/git-cat-file
  */
 
-import {strict as assert} from "node:assert";
-import {fileURLToPath} from "node:url";
-import {describe, it} from "node:test";
+import {strict as assert} from "node:assert"
+import {fileURLToPath} from "node:url"
+import {describe, it} from "node:test"
 
-import type {GCF} from "../types/git-cat-file.d.ts";
-import {openLocalRepo} from "../lib/index.ts";
+import type {GCF} from "../types/git-cat-file.d.ts"
+import {openLocalRepo} from "../lib/index.ts"
 
-const HERE = fileURLToPath(new URL(".", import.meta.url));
-const TITLE = fileURLToPath(import.meta.url).split("/").pop();
-const BASE = HERE.replace(/\/[^/]+\/?$/, "");
+const HERE = fileURLToPath(new URL(".", import.meta.url))
+const TITLE = fileURLToPath(import.meta.url).split("/").pop()
+const BASE = HERE.replace(/\/[^/]+\/?$/, "")
 
 describe(TITLE, () => {
-    let repo: GCF.Repo;
-    let HEAD: string;
+    let repo: GCF.Repo
+    let HEAD: string
 
     it(`Repo`, async () => {
-        repo = openLocalRepo(`${BASE}/repo/repo1/.git`);
-        assert.ok(repo);
-    });
+        repo = openLocalRepo(`${BASE}/repo/repo1/.git`)
+        assert.ok(repo)
+    })
 
     it(`Commit`, async () => {
-        const commit = await repo.getCommit("HEAD");
-        assert.equal(commit.getMessage(), "Empty\n");
+        const commit = await repo.getCommit("HEAD")
+        assert.equal(commit.getMessage(), "Empty\n")
 
-        HEAD = commit.getId();
-        assert.equal(typeof HEAD, "string");
-        assert.equal(HEAD?.length, 40);
+        HEAD = commit.getId()
+        assert.equal(typeof HEAD, "string")
+        assert.equal(HEAD?.length, 40)
 
-        const obj = await repo.getObject(HEAD);
-        const {type} = obj;
-        assert.equal(type, "commit");
+        const obj = await repo.getObject(HEAD)
+        const {type} = obj
+        assert.equal(type, "commit")
 
-        const file = await commit.getFile(`foo.txt`);
-        assert.equal(file.mode.isFile, true);
-        assert.equal(file.data + "", "Foo\n");
+        const file = await commit.getFile(`foo.txt`)
+        assert.equal(file.mode.isFile, true)
+        assert.equal(file.data + "", "Foo\n")
 
-        const parents = await commit.getParents();
-        assert.equal(parents.length, 1);
+        const parents = await commit.getParents()
+        assert.equal(parents.length, 1)
 
-        const author = commit.getMeta("author");
-        assert.ok(author);
+        const author = commit.getMeta("author")
+        assert.ok(author)
 
-        const date = commit.getDate();
-        assert.ok(date instanceof Date);
-        assert.ok(+date < +Date.now()); // past
-        assert.ok(date.getFullYear() >= 2000);
-    });
+        const date = commit.getDate()
+        assert.ok(date instanceof Date)
+        assert.ok(+date < +Date.now()) // past
+        assert.ok(date.getFullYear() >= 2000)
+    })
 
     it(`Tree`, async () => {
-        const commit = await repo.getCommit(HEAD);
-        const treeId = commit.getMeta("tree");
-        assert.equal(typeof treeId, "string");
+        const commit = await repo.getCommit(HEAD)
+        const treeId = commit.getMeta("tree")
+        assert.equal(typeof treeId, "string")
 
-        const tree = await repo.getTree(treeId);
-        assert.ok(Array.isArray(await tree.getEntries()));
+        const tree = await repo.getTree(treeId)
+        assert.ok(Array.isArray(await tree.getEntries()))
 
-        assert.equal(typeof tree.getId(), "string");
+        assert.equal(typeof tree.getId(), "string")
 
-        const entry = await tree.getEntry(`bar/buz.txt`);
-        assert.equal(entry.name, "buz.txt");
-        assert.equal(entry.mode.isFile, true);
+        const entry = await tree.getEntry(`bar/buz.txt`)
+        assert.equal(entry.name, "buz.txt")
+        assert.equal(entry.mode.isFile, true)
 
-        const obj = await repo.getObject(entry.oid);
-        const {data} = obj;
-        assert.equal(data + "", "Buz\n");
-    });
-});
+        const obj = await repo.getObject(entry.oid)
+        const {data} = obj
+        assert.equal(data + "", "Buz\n")
+    })
+})
