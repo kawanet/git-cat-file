@@ -1,7 +1,7 @@
 {
   "name": "git-cat-file",
   "description": "A pure-JavaScript implementation of `git cat-file -p` for Node.js.",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "author": "@kawanet",
   "bin": {
     "git-cat-file-js": "bin/git-cat-file-js.ts",
@@ -19,7 +19,7 @@
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-sucrase": "^5.1.0",
     "@types/node": "^24.12.2",
-    "rollup": "^4.60.3",
+    "rollup": "^4.62.0",
     "ts-refine": "^0.6.0",
     "typescript": "^6.0.3"
   },
