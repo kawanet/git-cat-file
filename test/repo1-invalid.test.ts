@@ -5,7 +5,6 @@
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
 import {fileURLToPath} from "node:url"
-
 import {openLocalRepo} from "../lib/index.ts"
 
 const HERE = fileURLToPath(new URL(".", import.meta.url))

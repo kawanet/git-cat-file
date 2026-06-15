@@ -3,7 +3,6 @@
  */
 
 import type {GCF} from "../types/git-cat-file.d.ts"
-
 import {getFileMode} from "./file-mode.ts"
 import type {ObjStore} from "./obj-store.ts"
 

@@ -4,7 +4,6 @@
 
 import {promises as fs} from "fs"
 import type {GCF} from "../types/git-cat-file.d.ts"
-
 import {shortCache} from "./cache.ts"
 import {Loose} from "./loose.ts"
 import {Pack} from "./pack.ts"

@@ -4,7 +4,6 @@
 
 import {promises as fs} from "fs"
 import type {GCF} from "../types/git-cat-file.d.ts"
-
 import {longCache} from "./cache.ts"
 import type {ObjStore} from "./obj-store.ts"
 import {readPackIndex} from "./pack-idx.ts"

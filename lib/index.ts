@@ -3,7 +3,6 @@
  */
 
 import type {GCF} from "../types/git-cat-file.d.ts"
-
 import {Repo} from "./repo.ts"
 
 export function openLocalRepo(path: string): GCF.Repo {

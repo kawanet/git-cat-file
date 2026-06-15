@@ -8,7 +8,6 @@
  */
 
 import {promises as fs} from "node:fs"
-
 import {parseOptions} from "../lib/cli-lib.ts"
 import {openLocalRepo} from "../lib/index.ts"
 import {showEnties, showEntry} from "../lib/show-tree.ts"

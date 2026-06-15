@@ -2,11 +2,9 @@
  * https://github.com/kawanet/git-cat-file
  */
 
-import type {GCF} from "../types/git-cat-file.d.ts"
-
 import {promises as fs} from "fs"
 import {inflateSync} from "zlib"
-
+import type {GCF} from "../types/git-cat-file.d.ts"
 import {shortCache} from "./cache.ts"
 
 export class Loose {

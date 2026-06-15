@@ -7,7 +7,6 @@
 
 import {strict as assert} from "node:assert"
 import {test} from "node:test"
-
 import {Commit} from "../lib/commit.ts"
 import type {GCF} from "../types/git-cat-file.d.ts"
 

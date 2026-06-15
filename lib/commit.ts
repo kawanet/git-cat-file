@@ -3,7 +3,6 @@
  */
 
 import type {GCF} from "../types/git-cat-file.d.ts"
-
 import {ObjItem} from "./obj-item.ts"
 import type {ObjStore} from "./obj-store.ts"
 import {Tree} from "./tree.ts"
