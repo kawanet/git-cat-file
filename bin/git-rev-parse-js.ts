@@ -7,61 +7,60 @@
  * (Node >= 22). No bundling step is involved for CLI entry points.
  */
 
-import {promises as fs} from "node:fs";
-
-import {parseOptions} from "../lib/cli-lib.ts";
-import {openLocalRepo} from "../lib/index.ts";
+import {promises as fs} from "node:fs"
+import {parseOptions} from "../lib/cli-lib.ts"
+import {openLocalRepo} from "../lib/index.ts"
 
 const longParams = {
     help: true,
-};
+}
 
 const shortParams = {
     C: "path", // change directory
     h: true, // show help
-};
+}
 
 async function CLI(args: string[]) {
     const options = parseOptions({
         long: longParams,
         short: shortParams,
         args: args,
-    });
-    args = options.args;
+    })
+    args = options.args
 
-    const {C} = options.short;
-    if (C) process.chdir(C);
+    const {C} = options.short
+    if (C) process.chdir(C)
 
     if (await fs.readdir(".git").catch((): null => null)) {
-        process.chdir(".git");
+        process.chdir(".git")
     }
 
-    const {help} = options.long;
-    const {h} = options.short;
+    const {help} = options.long
+    const {h} = options.short
     if (help || h) {
-        process.stderr.write(`Usage:\n`);
-        showHelp();
-        process.exit(1);
+        process.stderr.write(`Usage:\n`)
+        showHelp()
+        process.exit(1)
     }
 
-    const repo = openLocalRepo(".");
+    const repo = openLocalRepo(".")
 
     while (args.length) {
-        const revision = args.shift();
-        const obj = await repo.getObject(revision);
-        const commit_id = obj?.oid;
+        const revision = args.shift()
+        const obj = await repo.getObject(revision)
+        const commit_id = obj?.oid
         if (!commit_id) {
-            process.stderr.write(`Invalid revision: ${revision}\n`);
-            showHelp();
-            process.exit(1);
+            process.stderr.write(`Invalid revision: ${revision}\n`)
+            showHelp()
+            process.exit(1)
         }
 
-        process.stdout.write(`${commit_id}\n`);
+        process.stdout.write(`${commit_id}\n`)
     }
 }
 
 function showHelp() {
-    process.stderr.write(`  git-rev-parse-js [-C path] <args>...\n`);
+    process.stderr.write(`  git-rev-parse-js [-C path] <args>...\n`)
 }
 
-CLI(process.argv.slice(2)).catch(console.error);
+CLI(process.argv.slice(2)).catch(console.error)

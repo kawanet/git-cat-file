@@ -4,10 +4,10 @@
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-format.txt
  */
 
-import type {GCF} from "../types/git-cat-file.d.ts";
-import {promises as fs} from "fs";
-import {inflateSync} from "zlib";
-import type {ObjStore} from "./obj-store.ts";
+import {promises as fs} from "fs"
+import {inflateSync} from "zlib"
+import type {GCF} from "../types/git-cat-file.d.ts"
+import type {ObjStore} from "./obj-store.ts"
 
 const TypeBit = {
     OBJ_COMMIT: 1,
@@ -16,144 +16,144 @@ const TypeBit = {
     OBJ_TAG: 4,
     OBJ_OFS_DELTA: 6,
     OBJ_REF_DELTA: 7,
-} as const;
+} as const
 
-const typeNames: GCF.ObjType[] = [null, "commit", "tree", "blob", "tag"];
-const deltaTypes = {6: "OBJ_OFS_DELTA", 7: "OBJ_REF_DELTA"};
+const typeNames: GCF.ObjType[] = [null, "commit", "tree", "blob", "tag"]
+const deltaTypes = {6: "OBJ_OFS_DELTA", 7: "OBJ_REF_DELTA"}
 
 // const toHex = (buf: Buffer) => buf.toString("hex").replace(/(\w.)(?=\w)/g, "$1 ");
 
 export async function readPackedObject(fh: fs.FileHandle, start: number, store: ObjStore): Promise<Partial<GCF.IObject>> {
-    const buffer = Buffer.alloc(28);
-    await fh.read({buffer, position: start});
+    const buffer = Buffer.alloc(28)
+    await fh.read({buffer, position: start})
     // console.warn(`read: ${start} (${toHex(buffer)})`);
 
-    let offset = 0;
-    let c = buffer[offset++];
+    let offset = 0
+    let c = buffer[offset++]
 
-    const typeBit = (c & 0x70) >> 4;
-    const type = typeNames[typeBit];
-    const deltaType = deltaTypes[typeBit as keyof typeof deltaTypes];
+    const typeBit = (c & 0x70) >> 4
+    const type = typeNames[typeBit]
+    const deltaType = deltaTypes[typeBit as keyof typeof deltaTypes]
     // console.warn(`type: ${typeBit} (${deltaType || type})`);
-    if (!deltaType && !type) throw new TypeError(`Invalid type: ${typeBit}`);
+    if (!deltaType && !type) throw new TypeError(`Invalid type: ${typeBit}`)
 
-    let size = c & 0x0F;
+    let size = c & 0x0F
     {
-        let shift = 4;
+        let shift = 4
         while (c & 0x80) {
-            c = buffer[offset++];
-            size += ((c & 0x7F) << shift);
-            shift += 7;
+            c = buffer[offset++]
+            size += ((c & 0x7F) << shift)
+            shift += 7
         }
     }
     // console.warn(`size: ${size} bytes`);
 
     if (typeBit === TypeBit.OBJ_OFS_DELTA) {
-        let c = buffer[offset++];
-        let baseOffset = c & 0x7F;
+        let c = buffer[offset++]
+        let baseOffset = c & 0x7F
         while (c & 0x80) {
-            baseOffset += 1; // see unpack-objects.c
-            c = buffer[offset++];
-            baseOffset = (baseOffset << 7) + (c & 0x7F);
+            baseOffset += 1 // see unpack-objects.c
+            c = buffer[offset++]
+            baseOffset = (baseOffset << 7) + (c & 0x7F)
         }
 
         if (start < baseOffset) {
-            throw new TypeError(`offset value out of bound: ${start} < ${baseOffset}`);
+            throw new TypeError(`offset value out of bound: ${start} < ${baseOffset}`)
         }
 
         // console.warn(`delta: ${start} + ${offset}`);
-        const delta = await readData(fh, start + offset, size);
+        const delta = await readData(fh, start + offset, size)
 
         // console.warn(`base: ${start} - ${baseOffset}`);
-        const base = await readPackedObject(fh, start - baseOffset, store);
-        const data = applyDelta(base.data, delta);
-        return {type: base.type, data};
+        const base = await readPackedObject(fh, start - baseOffset, store)
+        const data = applyDelta(base.data, delta)
+        return {type: base.type, data}
     }
 
     if (typeBit === TypeBit.OBJ_REF_DELTA) {
-        const end = offset + 20;
-        const oid = buffer.slice(offset, end).toString("hex");
-        offset = end;
+        const end = offset + 20
+        const oid = buffer.slice(offset, end).toString("hex")
+        offset = end
 
         // console.warn(`delta: ${start} + ${offset}`);
-        const delta = await readData(fh, start + offset, size);
+        const delta = await readData(fh, start + offset, size)
 
         // console.warn(`base: ${oid}`);
-        const base = await store.getObject(oid);
-        const data = applyDelta(base.data, delta);
-        return {type: base.type, data};
+        const base = await store.getObject(oid)
+        const data = applyDelta(base.data, delta)
+        return {type: base.type, data}
     }
 
     if (!size) {
-        const data = Buffer.alloc(0);
-        return {type, data};
+        const data = Buffer.alloc(0)
+        return {type, data}
     }
 
     // console.warn(`position: ${start} + ${offset}`);
-    const data = await readData(fh, start + offset, size);
-    return {type, data};
+    const data = await readData(fh, start + offset, size)
+    return {type, data}
 }
 
 async function readData(fh: fs.FileHandle, position: number, size: number): Promise<Buffer> {
-    const bufSize = Math.ceil(size * 17 / 16 / 512) * 512;
-    const buffer = Buffer.alloc(bufSize);
-    await fh.read({buffer, position});
-    return inflateSync(buffer, {maxOutputLength: size});
+    const bufSize = Math.ceil(size * 17 / 16 / 512) * 512
+    const buffer = Buffer.alloc(bufSize)
+    await fh.read({buffer, position})
+    return inflateSync(buffer, {maxOutputLength: size})
 }
 
 function applyDelta(baseData: Buffer, deltaData: Buffer): Buffer {
-    let deltaPos = 0;
-    let dstPos = 0;
+    let deltaPos = 0
+    let dstPos = 0
 
     // console.warn(`delta: ${toHex(deltaData.slice(0, 32))}`);
 
-    const srcSize = readSize();
-    if (!srcSize) throw new TypeError(`Invalid source size: ${srcSize}`);
+    const srcSize = readSize()
+    if (!srcSize) throw new TypeError(`Invalid source size: ${srcSize}`)
 
-    const dstSize = readSize();
-    if (!dstSize) throw new TypeError(`Invalid dest size: ${dstSize}`);
+    const dstSize = readSize()
+    if (!dstSize) throw new TypeError(`Invalid dest size: ${dstSize}`)
 
-    const dstData = Buffer.alloc(dstSize);
-    const deltaEnd = deltaData.length;
+    const dstData = Buffer.alloc(dstSize)
+    const deltaEnd = deltaData.length
 
     while (deltaPos < deltaEnd) {
-        const inst = deltaData[deltaPos++];
+        const inst = deltaData[deltaPos++]
         if (inst & 0x80) {
-            let offset = 0;
-            let size = 0;
-            if (inst & 0x01) offset += deltaData[deltaPos++];
-            if (inst & 0x02) offset += (deltaData[deltaPos++] << 8);
-            if (inst & 0x04) offset += (deltaData[deltaPos++] << 16);
-            if (inst & 0x08) offset += (deltaData[deltaPos++] << 24);
-            if (inst & 0x10) size += deltaData[deltaPos++];
-            if (inst & 0x20) size += (deltaData[deltaPos++] << 8);
-            if (inst & 0x40) size += (deltaData[deltaPos++] << 16);
-            if (!size) size = 0x10000;
+            let offset = 0
+            let size = 0
+            if (inst & 0x01) offset += deltaData[deltaPos++]
+            if (inst & 0x02) offset += (deltaData[deltaPos++] << 8)
+            if (inst & 0x04) offset += (deltaData[deltaPos++] << 16)
+            if (inst & 0x08) offset += (deltaData[deltaPos++] << 24)
+            if (inst & 0x10) size += deltaData[deltaPos++]
+            if (inst & 0x20) size += (deltaData[deltaPos++] << 8)
+            if (inst & 0x40) size += (deltaData[deltaPos++] << 16)
+            if (!size) size = 0x10000
             // console.warn(`copy: ${inst.toString(2)} offset=${offset} size=${size}`);
-            baseData.copy(dstData, dstPos, offset, offset + size);
-            dstPos += size;
+            baseData.copy(dstData, dstPos, offset, offset + size)
+            dstPos += size
         } else if (inst) {
-            const end = deltaPos + inst;
+            const end = deltaPos + inst
             // console.warn(`add: ${inst}`);
-            deltaData.copy(dstData, dstPos, deltaPos, end);
-            deltaPos = end;
-            dstPos += inst;
+            deltaData.copy(dstData, dstPos, deltaPos, end)
+            deltaPos = end
+            dstPos += inst
         } else {
-            throw TypeError(`unexpected delta opcode: ${inst}`);
+            throw TypeError(`unexpected delta opcode: ${inst}`)
         }
     }
 
-    return dstData;
+    return dstData
 
     function readSize() {
-        let c = deltaData[deltaPos++];
-        let shift = 7;
-        let size = c & 0x7F;
+        let c = deltaData[deltaPos++]
+        let shift = 7
+        let size = c & 0x7F
         while (c & 0x80) {
-            c = deltaData[deltaPos++];
-            size += ((c & 0x7F) << shift);
-            shift += 7;
+            c = deltaData[deltaPos++]
+            size += ((c & 0x7F) << shift)
+            shift += 7
         }
-        return size;
+        return size
     }
 }

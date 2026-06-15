@@ -2,54 +2,54 @@
  * https://github.com/kawanet/git-cat-file
  */
 
-import type {GCF} from "../types/git-cat-file.d.ts";
-import {Commit} from "./commit.ts";
-import {Tree} from "./tree.ts";
-import {ObjStore} from "./obj-store.ts";
-import {Tag} from "./tag.ts";
+import type {GCF} from "../types/git-cat-file.d.ts"
+import {Commit} from "./commit.ts"
+import {ObjStore} from "./obj-store.ts"
+import {Tag} from "./tag.ts"
+import {Tree} from "./tree.ts"
 
-const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/i.test(oid));
-const isLooseId = (oid: string) => (oid && /^[0-9a-f]{4,40}$/i.test(oid));
+const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/i.test(oid))
+const isLooseId = (oid: string) => (oid && /^[0-9a-f]{4,40}$/i.test(oid))
 
 export class Repo implements GCF.Repo {
-    private readonly store: ObjStore;
+    private readonly store: ObjStore
 
     constructor(path: string) {
-        path = path.replace(/\/+$/, "");
-        this.store = new ObjStore(path);
+        path = path.replace(/\/+$/, "")
+        this.store = new ObjStore(path)
     }
 
     async getObject(object_id: string): Promise<GCF.IObject> {
         if (isObjectId(object_id)) {
-            const obj = await this.store.getObject(object_id);
-            if (obj) return obj;
+            const obj = await this.store.getObject(object_id)
+            if (obj) return obj
         }
 
         if (isLooseId(object_id)) {
-            const oid = await this.store.findObjectId(object_id);
-            if (oid) return this.store.getObject(oid);
+            const oid = await this.store.findObjectId(object_id)
+            if (oid) return this.store.getObject(oid)
         }
 
-        const commit_id = await this.store.findCommitId(object_id);
-        if (commit_id) return this.store.getObject(commit_id);
+        const commit_id = await this.store.findCommitId(object_id)
+        if (commit_id) return this.store.getObject(commit_id)
     }
 
     async getCommit(commit_id: string): Promise<GCF.Commit> {
-        let obj = await this.getObject(commit_id);
-        if (!obj) return;
+        let obj = await this.getObject(commit_id)
+        if (!obj) return
 
         if (obj.type === "tag") {
-            const tag = new Tag(obj, this.store);
-            commit_id = tag.getMeta("object");
-            obj = await this.getObject(commit_id);
+            const tag = new Tag(obj, this.store)
+            commit_id = tag.getMeta("object")
+            obj = await this.getObject(commit_id)
         }
 
-        return new Commit(obj, this.store);
+        return new Commit(obj, this.store)
     }
 
     async getTree(object_id: string): Promise<GCF.Tree> {
-        const obj = await this.getObject(object_id);
-        if (!obj) return;
-        return new Tree(obj, this.store);
+        const obj = await this.getObject(object_id)
+        if (!obj) return
+        return new Tree(obj, this.store)
     }
 }

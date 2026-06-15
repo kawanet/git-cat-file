@@ -69,13 +69,17 @@ smoke-cjs: $(CJS_DST)
 
 ####
 
-# Build, run smoke tests, and conditionally run full tests (tsc and node:test).
-test: all smoke $(TYPES)
-	@ [ "$$npm_command" != "install" ] || echo "npm install detected: skipping full tests."
-	@ [ "$$npm_command" = "install" ] || $(MAKE) test-ts
+# Consumer `npm install` and `npm ci` skip the heavy test-full step.
+# CI re-runs `npm test` explicitly so the validation appears in logs.
+test:
+	@case "$$npm_command" in \
+		install|ci) echo "npm $$npm_command detected: skipping full tests." ;; \
+		*) $(MAKE) test-full ;; \
+	esac
 
-test-ts:
-	../node_modules/.bin/tsc --noEmit
+test-full: all smoke
+	cd .. && node_modules/.bin/tsc --noEmit
+	cd .. && node_modules/.bin/ts-refine format --check && node_modules/.bin/ts-refine imports --check
 	cd .. && rm -rf repo/ && sh test/repo1-prepare.sh && sh test/repo2-prepare.sh && sh test/repo3-prepare.sh && bash test/repo4-prepare.sh
 	cd .. && sh test/repo1-test.sh && sh test/repo2-test.sh && sh test/repo3-test.sh
 	cd .. && node --test test/*.test.ts
@@ -83,4 +87,4 @@ test-ts:
 clean:
 	/bin/rm -fr $(ALL)
 
-.PHONY: all clean test smoke test-ts is-buildable is-not-buildable smoke-mjs smoke-cjs
+.PHONY: all clean test smoke test-full is-buildable is-not-buildable smoke-mjs smoke-cjs

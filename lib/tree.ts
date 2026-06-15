@@ -2,91 +2,90 @@
  * https://github.com/kawanet/git-cat-file
  */
 
-import type {GCF} from "../types/git-cat-file.d.ts";
-
-import {getFileMode} from "./file-mode.ts";
-import type {ObjStore} from "./obj-store.ts";
+import type {GCF} from "../types/git-cat-file.d.ts"
+import {getFileMode} from "./file-mode.ts"
+import type {ObjStore} from "./obj-store.ts"
 
 export class Tree implements GCF.Tree {
-    private readonly obj: GCF.IObject;
-    protected readonly store: ObjStore;
+    private readonly obj: GCF.IObject
+    protected readonly store: ObjStore
 
     constructor(obj: GCF.IObject, store: ObjStore) {
         if (obj.type !== "tree") {
             throw new TypeError(`Invalid tree object: ${obj.oid} (${obj.type})`)
         }
-        this.obj = obj;
-        this.store = store;
+        this.obj = obj
+        this.store = store
     }
 
     getId(): string {
-        return this.obj.oid;
+        return this.obj.oid
     }
 
     async getEntries(): Promise<GCF.Entry[]> {
-        return parseTree(this.obj.data);
+        return parseTree(this.obj.data)
     }
 
     async getEntry(path: string): Promise<GCF.Entry> {
-        let tree: GCF.Tree = this;
+        let tree: GCF.Tree = this
 
         if (/\//.test(path)) {
-            const names = path.split("/");
-            path = names.pop();
-            if (!path) path = names.pop();
-            tree = await this.getTree(names.join("/"));
+            const names = path.split("/")
+            path = names.pop()
+            if (!path) path = names.pop()
+            tree = await this.getTree(names.join("/"))
         }
-        if (!tree) return;
+        if (!tree) return
 
-        const list = await tree.getEntries();
-        return list.filter(item => item.name === path).shift();
+        const list = await tree.getEntries()
+        return list.filter(item => item.name === path).shift()
     }
 
     async getTree(path: string): Promise<GCF.Tree> {
-        let tree: Tree = this;
+        let tree: Tree = this
 
         for (const name of path.split("/")) {
-            if (!name) continue;
-            const entry = await tree.getEntry(name);
-            if (!entry) return;
-            const obj = await this.store.getObject(entry.oid);
-            if (!obj) return;
-            tree = new Tree(obj, this.store);
+            if (!name) continue
+            const entry = await tree.getEntry(name)
+            if (!entry) return
+            const obj = await this.store.getObject(entry.oid)
+            if (!obj) return
+            tree = new Tree(obj, this.store)
         }
 
-        return tree;
+        return tree
     }
 }
 
 function parseTree(data: Buffer): GCF.Entry[] {
-    const list: GCF.Entry[] = [];
+    const list: GCF.Entry[] = []
 
-    let start = 0;
-    let end: number;
+    let start = 0
+    let end: number
 
-    const {length} = data;
+    const {length} = data
     while (start < length) {
-        end = findZero(data, start);
-        const line = data.slice(start, end - 1).toString();
-        const [modeStr, name] = splitBySpace(line);
-        const mode = getFileMode(modeStr);
-        start = end + 20;
-        const oid = data.slice(end, start).toString("hex");
-        list.push({mode, name, oid});
+        end = findZero(data, start)
+        const line = data.slice(start, end - 1).toString()
+        const [modeStr, name] = splitBySpace(line)
+        const mode = getFileMode(modeStr)
+        start = end + 20
+        const oid = data.slice(end, start).toString("hex")
+        list.push({mode, name, oid})
     }
 
-    return list;
+    return list
 }
 
 function findZero(buf: Buffer, offset?: number): number {
-    offset |= 0;
+    offset |= 0
     while (buf[offset++]) {
         // nop
     }
-    return offset;
+    return offset
 }
 
 function splitBySpace(line: string): string[] {
-    const sp = line.indexOf(" ");
-    return [line.slice(0, sp), line.slice(sp + 1)];
+    const sp = line.indexOf(" ")
+    return [line.slice(0, sp), line.slice(sp + 1)]
 }
