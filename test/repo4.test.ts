@@ -11,8 +11,8 @@
 
 import {strict as assert} from "node:assert"
 import {existsSync} from "node:fs"
-import {fileURLToPath} from "node:url"
 import {describe, it} from "node:test"
+import {fileURLToPath} from "node:url"
 
 import {openLocalRepo} from "../lib/index.ts"
 import type {GCF} from "../types/git-cat-file.d.ts"

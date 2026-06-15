@@ -4,9 +4,9 @@
 
 import type {GCF} from "../types/git-cat-file.d.ts"
 import {Commit} from "./commit.ts"
-import {Tree} from "./tree.ts"
 import {ObjStore} from "./obj-store.ts"
 import {Tag} from "./tag.ts"
+import {Tree} from "./tree.ts"
 
 const isObjectId = (oid: string) => (oid && /^[0-9a-f]{40}$/i.test(oid))
 const isLooseId = (oid: string) => (oid && /^[0-9a-f]{4,40}$/i.test(oid))

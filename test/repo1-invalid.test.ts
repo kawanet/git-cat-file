@@ -3,8 +3,8 @@
  */
 
 import {strict as assert} from "node:assert"
-import {fileURLToPath} from "node:url"
 import {describe, it} from "node:test"
+import {fileURLToPath} from "node:url"
 
 import {openLocalRepo} from "../lib/index.ts"
 

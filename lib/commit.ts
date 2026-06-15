@@ -4,9 +4,9 @@
 
 import type {GCF} from "../types/git-cat-file.d.ts"
 
-import {Tree} from "./tree.ts"
-import type {ObjStore} from "./obj-store.ts"
 import {ObjItem} from "./obj-item.ts"
+import type {ObjStore} from "./obj-store.ts"
+import {Tree} from "./tree.ts"
 
 export class Commit extends ObjItem<GCF.CommitMeta> implements GCF.Commit {
     constructor(obj: GCF.IObject, store: ObjStore) {

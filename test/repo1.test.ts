@@ -3,11 +3,11 @@
  */
 
 import {strict as assert} from "node:assert"
-import {fileURLToPath} from "node:url"
 import {describe, it} from "node:test"
+import {fileURLToPath} from "node:url"
 
-import type {GCF} from "../types/git-cat-file.d.ts"
 import {openLocalRepo} from "../lib/index.ts"
+import type {GCF} from "../types/git-cat-file.d.ts"
 
 const HERE = fileURLToPath(new URL(".", import.meta.url))
 const TITLE = fileURLToPath(import.meta.url).split("/").pop()

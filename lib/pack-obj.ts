@@ -4,9 +4,9 @@
  * @see https://github.com/git/git/blob/master/Documentation/technical/pack-format.txt
  */
 
-import type {GCF} from "../types/git-cat-file.d.ts"
 import {promises as fs} from "fs"
 import {inflateSync} from "zlib"
+import type {GCF} from "../types/git-cat-file.d.ts"
 import type {ObjStore} from "./obj-store.ts"
 
 const TypeBit = {
