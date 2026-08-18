@@ -18,8 +18,8 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-sucrase": "^5.1.0",
-    "@types/node": "^24.12.2",
-    "rollup": "^4.62.0",
+    "@types/node": "^24.13.3",
+    "rollup": "^4.62.4",
     "ts-refine": "^0.6.0",
     "typescript": "^6.0.3"
   },
