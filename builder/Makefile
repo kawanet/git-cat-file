@@ -60,9 +60,7 @@ $(CJS_DST): $(CJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@echo ""
 
 # Plain-JS builds of the published bin entries. One rollup run emits
-# all three, so the recipe lives on the first CLI alone: grouped
-# targets (&:) would say this directly but need GNU make 4.3, and the
-# parse error on older make -- macOS ships 3.81 -- kills every target.
+# all three; the recipe lives on the first CLI alone.
 $(CLI_DST1): $(CLI_CONFIG) $(SRC) $(CLI_SRC) $(BUILDER_SRC)
 	@mkdir -p ../dist
 	../node_modules/.bin/rollup -c $(CLI_CONFIG)
