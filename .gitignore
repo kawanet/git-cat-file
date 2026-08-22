@@ -7,6 +7,7 @@
 .vscode/
 bin/**/*.js
 build/
+builder/tests/
 dist/
 lib/**/*.js
 node_modules/

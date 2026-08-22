@@ -1,12 +1,15 @@
 SRC   := $(wildcard ../lib/*.ts)
+TEST_SRC := $(wildcard ../test/*.test.ts)
 TYPES := $(wildcard ../types/*.d.ts)
 BUILDER_SRC := $(wildcard ./*.ts)
 
 MJS_DST := ../dist/git-cat-file.mjs
 CJS_DST := ../dist/git-cat-file.cjs
+TESTS_DST := ../builder/tests/bundled.js
 
 MJS_CONFIG := ./rollup-mjs.config.ts
 CJS_CONFIG := ./rollup-cjs.config.ts
+TESTS_CONFIG := ./rollup-tests.config.ts
 
 # Each bundle should stay around 26 KB (lib/ + the two `dependencies` we
 # externalise). Anything noticeably larger means an accidental bundling of
@@ -18,7 +21,7 @@ MAX_BYTES := 30000
 # bundled, so they are not part of $(ALL).
 NAMED_EXPORTS := openLocalRepo
 
-ALL := $(MJS_DST) $(CJS_DST)
+ALL := $(MJS_DST) $(CJS_DST) $(TESTS_DST)
 
 # Build/test paths require Node's native TypeScript type-strip (default on
 # Node 22.18+). Older runtimes (e.g. Node 20) report BUILDABLE=NO and can
@@ -50,6 +53,14 @@ $(CJS_DST): $(CJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@mkdir -p $(dir $@)
 	../node_modules/.bin/rollup -c $<
 	@test "$$(wc -c < $@)" -le $(MAX_BYTES) || { echo "ERROR: $@ exceeds $(MAX_BYTES) byte cap" >&2; exit 1; }
+	@ls -l $@
+	@echo ""
+
+# Plain-JS bundle of the test suites, importing the package by name.
+# Runs against dist/ on any supported Node runtime without type-strip.
+$(TESTS_DST): $(TESTS_CONFIG) $(SRC) $(BUILDER_SRC) $(TEST_SRC) $(MJS_DST)
+	@mkdir -p $(dir $@)
+	../node_modules/.bin/rollup -c $<
 	@ls -l $@
 	@echo ""
 
