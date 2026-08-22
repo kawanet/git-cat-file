@@ -6,7 +6,10 @@ BUILDER_SRC := $(wildcard ./*.ts)
 
 MJS_DST := ../dist/git-cat-file.mjs
 CJS_DST := ../dist/git-cat-file.cjs
-CLI_DST := $(patsubst ../bin/%.ts,../dist/%.mjs,$(CLI_SRC))
+CLI_DST1 := ../dist/git-cat-file-js.mjs
+CLI_DST2 := ../dist/git-ls-tree-js.mjs
+CLI_DST3 := ../dist/git-rev-parse-js.mjs
+CLI_DST := $(CLI_DST1) $(CLI_DST2) $(CLI_DST3)
 TESTS_DST := ../builder/tests/bundled.js
 
 MJS_CONFIG := ./rollup-mjs.config.ts
@@ -60,16 +63,19 @@ $(CJS_DST): $(CJS_CONFIG) $(SRC) $(BUILDER_SRC)
 # all three, so the recipe lives on the first CLI alone: grouped
 # targets (&:) would say this directly but need GNU make 4.3, and the
 # parse error on older make -- macOS ships 3.81 -- kills every target.
-CLI_DST1 := $(firstword $(CLI_DST))
-
 $(CLI_DST1): $(CLI_CONFIG) $(SRC) $(CLI_SRC) $(BUILDER_SRC)
 	@mkdir -p ../dist
 	../node_modules/.bin/rollup -c $(CLI_CONFIG)
 	@ls -l $(CLI_DST)
 	@echo ""
 
-# Track the first CLI; re-run rollup only if this one went missing.
-$(filter-out $(CLI_DST1),$(CLI_DST)): $(CLI_DST1)
+# The others track the chain 1 -> 2 -> 3, so recovery of several
+# missing files stays serialized even under `make -j`; the guard
+# re-runs rollup only when its own file went missing.
+$(CLI_DST2): $(CLI_DST1)
+	@test -f $@ || ../node_modules/.bin/rollup -c $(CLI_CONFIG)
+
+$(CLI_DST3): $(CLI_DST2)
 	@test -f $@ || ../node_modules/.bin/rollup -c $(CLI_CONFIG)
 
 # Plain-JS bundle of the test suites, importing the package by name.
