@@ -1,24 +1,27 @@
 SRC   := $(wildcard ../lib/*.ts)
+CLI_SRC := $(wildcard ../bin/*.ts)
+TEST_SRC := $(wildcard ../test/*.test.ts)
 TYPES := $(wildcard ../types/*.d.ts)
 BUILDER_SRC := $(wildcard ./*.ts)
 
 MJS_DST := ../dist/git-cat-file.mjs
 CJS_DST := ../dist/git-cat-file.cjs
+CLI_DST := $(patsubst ../bin/%.ts,../dist/%.mjs,$(CLI_SRC))
+TESTS_DST := ../builder/tests/bundled.js
 
 MJS_CONFIG := ./rollup-mjs.config.ts
 CJS_CONFIG := ./rollup-cjs.config.ts
+CLI_CONFIG := ./rollup-cli.config.ts
+TESTS_CONFIG := ./rollup-tests.config.ts
 
 # Each bundle should stay around 26 KB (lib/ + the two `dependencies` we
 # externalise). Anything noticeably larger means an accidental bundling of
 # Node built-ins or a transitive dep — fail the build so it cannot slip in.
 MAX_BYTES := 30000
 
-# CLI entry points under bin/*.ts are executed directly by Node via the
-# built-in TypeScript type-stripping (Node >= 22). They do not need to be
-# bundled, so they are not part of $(ALL).
 NAMED_EXPORTS := openLocalRepo
 
-ALL := $(MJS_DST) $(CJS_DST)
+ALL := $(MJS_DST) $(CJS_DST) $(CLI_DST) $(TESTS_DST)
 
 # Build/test paths require Node's native TypeScript type-strip (default on
 # Node 22.18+). Older runtimes (e.g. Node 20) report BUILDABLE=NO and can
@@ -29,15 +32,15 @@ BUILDABLE := $(shell node -e 'console.log(process.features.typescript ? "YES" : 
 
 all: is-buildable $(ALL)
 
-# Gate that fails loudly when type-strip is unavailable; consumed by `all`
-# and by `npm prepack` to refuse packaging on a non-buildable runtime.
+# Gate consumed by `all` and `npm prepack` so a build starts only where it
+# can finish: with native type-strip and the devDependencies installed.
 is-buildable:
-	@ [ "$(BUILDABLE)" = "YES" ]
+	@ [ "$(BUILDABLE)" = "YES" ] && [ -f ../node_modules/.bin/rollup ]
 
-# Inverse gate used by `npm prepare` to short-circuit on a non-buildable
-# runtime so consumer install on Node 20 silently skips build/test.
+# Inverse gate for `npm prepare`: a consumer install skips build/test and
+# relies on prebuilt artifacts; contributors build on a capable runtime.
 is-not-buildable:
-	@ [ "$(BUILDABLE)" = "NO" ]
+	@ [ "$(BUILDABLE)" != "YES" ] || [ ! -f ../node_modules/.bin/rollup ]
 
 $(MJS_DST): $(MJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@mkdir -p $(dir $@)
@@ -50,6 +53,22 @@ $(CJS_DST): $(CJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@mkdir -p $(dir $@)
 	../node_modules/.bin/rollup -c $<
 	@test "$$(wc -c < $@)" -le $(MAX_BYTES) || { echo "ERROR: $@ exceeds $(MAX_BYTES) byte cap" >&2; exit 1; }
+	@ls -l $@
+	@echo ""
+
+# Plain-JS builds of the published bin entries. One rollup run produces
+# all three (the config exports an array), hence the grouped target.
+$(CLI_DST) &: $(CLI_CONFIG) $(SRC) $(CLI_SRC) $(BUILDER_SRC)
+	@mkdir -p ../dist
+	../node_modules/.bin/rollup -c $(CLI_CONFIG)
+	@ls -l $(CLI_DST)
+	@echo ""
+
+# Plain-JS bundle of the test suites, importing the package by name.
+# Runs against dist/ on any supported Node runtime without type-strip.
+$(TESTS_DST): $(TESTS_CONFIG) $(SRC) $(BUILDER_SRC) $(TEST_SRC) $(MJS_DST)
+	@mkdir -p $(dir $@)
+	../node_modules/.bin/rollup -c $<
 	@ls -l $@
 	@echo ""
 

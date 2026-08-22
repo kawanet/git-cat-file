@@ -3,8 +3,8 @@
 /**
  * https://github.com/kawanet/git-cat-file
  *
- * Executed directly by Node via its built-in TypeScript type-stripping
- * (Node >= 22). No bundling step is involved for CLI entry points.
+ * Source for the corresponding dist/*.js bin entry. Still runnable
+ * directly via Node's built-in type-stripping (Node >= 22) in development.
  */
 
 import {promises as fs} from "node:fs"

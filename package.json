@@ -4,9 +4,9 @@
   "version": "0.5.3",
   "author": "@kawanet",
   "bin": {
-    "git-cat-file-js": "bin/git-cat-file-js.ts",
-    "git-ls-tree-js": "bin/git-ls-tree-js.ts",
-    "git-rev-parse-js": "bin/git-rev-parse-js.ts"
+    "git-cat-file-js": "dist/git-cat-file-js.mjs",
+    "git-ls-tree-js": "dist/git-ls-tree-js.mjs",
+    "git-rev-parse-js": "dist/git-rev-parse-js.mjs"
   },
   "bugs": {
     "url": "https://github.com/kawanet/git-cat-file/issues"
@@ -16,6 +16,8 @@
     "process.argv": "^1.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-alias": "^6.0.0",
+    "@rollup/plugin-multi-entry": "^7.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-sucrase": "^5.1.0",
     "@types/node": "^24.13.3",
@@ -31,7 +33,7 @@
     }
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=18"
   },
   "exports": {
     ".": {
@@ -44,8 +46,11 @@
     "LICENSE",
     "README.md",
     "bin/*.ts",
+    "dist/git-cat-file-js.mjs",
     "dist/git-cat-file.cjs",
     "dist/git-cat-file.mjs",
+    "dist/git-ls-tree-js.mjs",
+    "dist/git-rev-parse-js.mjs",
     "lib/*.ts",
     "types/*.d.ts"
   ],
@@ -70,6 +75,7 @@
     "prepack": "make -C builder is-buildable",
     "prepare": "make -C builder is-not-buildable 2> /dev/null || make -C builder clean all test",
     "test": "make -C builder test",
+    "test-bundled": "sh test/repo1-prepare.sh && bash test/repo4-prepare.sh && node --test builder/tests/bundled.js",
     "ts-refine": "./node_modules/.bin/ts-refine format && ./node_modules/.bin/ts-refine imports"
   },
   "sideEffects": false,

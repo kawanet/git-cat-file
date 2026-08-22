@@ -2,15 +2,14 @@
  * https://github.com/kawanet/git-cat-file
  */
 
+import type {GCF} from "git-cat-file"
 import {strict as assert} from "node:assert"
 import {describe, it} from "node:test"
 import {fileURLToPath} from "node:url"
 import {openLocalRepo} from "../lib/index.ts"
-import type {GCF} from "../types/git-cat-file.d.ts"
 
-const HERE = fileURLToPath(new URL(".", import.meta.url))
+const BASE = process.cwd()
 const TITLE = fileURLToPath(import.meta.url).split("/").pop()
-const BASE = HERE.replace(/\/[^/]+\/?$/, "")
 
 describe(TITLE, () => {
     let repo: GCF.Repo

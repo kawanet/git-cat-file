@@ -9,16 +9,15 @@
  * `ssh-keygen`).
  */
 
+import type {GCF} from "git-cat-file"
 import {strict as assert} from "node:assert"
 import {existsSync} from "node:fs"
 import {describe, it} from "node:test"
 import {fileURLToPath} from "node:url"
 import {openLocalRepo} from "../lib/index.ts"
-import type {GCF} from "../types/git-cat-file.d.ts"
 
-const HERE = fileURLToPath(new URL(".", import.meta.url))
+const BASE = process.cwd()
 const TITLE = fileURLToPath(import.meta.url).split("/").pop()
-const BASE = HERE.replace(/\/[^/]+\/?$/, "")
 const REPO = `${BASE}/repo/repo4`
 
 const SSH_BEGIN = "-----BEGIN SSH SIGNATURE-----"
