@@ -4,9 +4,9 @@
   "version": "0.5.3",
   "author": "@kawanet",
   "bin": {
-    "git-cat-file-js": "bin/git-cat-file-js.ts",
-    "git-ls-tree-js": "bin/git-ls-tree-js.ts",
-    "git-rev-parse-js": "bin/git-rev-parse-js.ts"
+    "git-cat-file-js": "dist/git-cat-file-js.mjs",
+    "git-ls-tree-js": "dist/git-ls-tree-js.mjs",
+    "git-rev-parse-js": "dist/git-rev-parse-js.mjs"
   },
   "bugs": {
     "url": "https://github.com/kawanet/git-cat-file/issues"
@@ -46,8 +46,11 @@
     "LICENSE",
     "README.md",
     "bin/*.ts",
+    "dist/git-cat-file-js.mjs",
     "dist/git-cat-file.cjs",
     "dist/git-cat-file.mjs",
+    "dist/git-ls-tree-js.mjs",
+    "dist/git-rev-parse-js.mjs",
     "lib/*.ts",
     "types/*.d.ts"
   ],
