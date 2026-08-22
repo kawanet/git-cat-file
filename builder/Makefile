@@ -56,13 +56,21 @@ $(CJS_DST): $(CJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@ls -l $@
 	@echo ""
 
-# Plain-JS builds of the published bin entries. One rollup run produces
-# all three (the config exports an array), hence the grouped target.
-$(CLI_DST) &: $(CLI_CONFIG) $(SRC) $(CLI_SRC) $(BUILDER_SRC)
+# Plain-JS builds of the published bin entries. One rollup run emits
+# all three, so the recipe lives on the first CLI alone: grouped
+# targets (&:) would say this directly but need GNU make 4.3, and the
+# parse error on older make -- macOS ships 3.81 -- kills every target.
+CLI_DST1 := $(firstword $(CLI_DST))
+
+$(CLI_DST1): $(CLI_CONFIG) $(SRC) $(CLI_SRC) $(BUILDER_SRC)
 	@mkdir -p ../dist
 	../node_modules/.bin/rollup -c $(CLI_CONFIG)
 	@ls -l $(CLI_DST)
 	@echo ""
+
+# Track the first CLI; re-run rollup only if this one went missing.
+$(filter-out $(CLI_DST1),$(CLI_DST)): $(CLI_DST1)
+	@test -f $@ || ../node_modules/.bin/rollup -c $(CLI_CONFIG)
 
 # Plain-JS bundle of the test suites, importing the package by name.
 # Runs against dist/ on any supported Node runtime without type-strip.
