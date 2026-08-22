@@ -6,7 +6,10 @@ BUILDER_SRC := $(wildcard ./*.ts)
 
 MJS_DST := ../dist/git-cat-file.mjs
 CJS_DST := ../dist/git-cat-file.cjs
-CLI_DST := $(patsubst ../bin/%.ts,../dist/%.mjs,$(CLI_SRC))
+CLI_DST1 := ../dist/git-cat-file-js.mjs
+CLI_DST2 := ../dist/git-ls-tree-js.mjs
+CLI_DST3 := ../dist/git-rev-parse-js.mjs
+CLI_DST := $(CLI_DST1) $(CLI_DST2) $(CLI_DST3)
 TESTS_DST := ../builder/tests/bundled.js
 
 MJS_CONFIG := ./rollup-mjs.config.ts
@@ -56,12 +59,23 @@ $(CJS_DST): $(CJS_CONFIG) $(SRC) $(BUILDER_SRC)
 	@ls -l $@
 	@echo ""
 
-# Plain-JS builds of the published bin entries. One rollup run produces
-# all three (the config exports an array), hence the grouped target.
-$(CLI_DST) &: $(CLI_CONFIG) $(SRC) $(CLI_SRC) $(BUILDER_SRC)
+# Plain-JS builds of the published bin entries. One rollup run emits
+# all three; the recipe lives on the first CLI alone.
+$(CLI_DST1): $(CLI_CONFIG) $(SRC) $(CLI_SRC) $(BUILDER_SRC)
 	@mkdir -p ../dist
 	../node_modules/.bin/rollup -c $(CLI_CONFIG)
-	@ls -l $(CLI_DST)
+	@ls -l $@
+	@echo ""
+
+# The same rollup run above emits these too, so no second build
+# command: the chain 1 -> 2 -> 3 keeps ordering, and ls fails
+# loudly if a file is missing (recover: make clean).
+$(CLI_DST2): $(CLI_DST1)
+	@ls -l $@
+	@echo ""
+
+$(CLI_DST3): $(CLI_DST2)
+	@ls -l $@
 	@echo ""
 
 # Plain-JS bundle of the test suites, importing the package by name.
