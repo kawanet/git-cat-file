@@ -7,6 +7,9 @@ SHELL := bash
 # staged artifacts in place without installing anything.
 PKG_ROOT ?= node_modules/git-cat-file
 
+# A target name in builder/, not a path from here.
+TESTS_DST := ./tests/bundled.mjs
+
 # The workflows drive these steps in order:
 #   nodejs.yml   pack bundled unpack test
 #   publish.yml  bundled test-dist
@@ -22,7 +25,7 @@ pack: clean
 	mv *-*.*.*.tgz packed.tgz
 
 bundled:
-	$(MAKE) -C .. tests/bundled.mjs
+	$(MAKE) -C .. $(TESTS_DST)
 
 unpack:
 	cd ../.. && npm install ./builder/pack/packed.tgz --no-audit --no-fund --no-save
