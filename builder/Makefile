@@ -70,6 +70,7 @@ $(CJS_DST): $(CJS_CONFIG) $(SRC) $(BUILDER_SRC)
 $(CLI_DST1): $(CLI_CONFIG) $(SRC) $(CLI_SRC) $(BUILDER_SRC)
 	@mkdir -p ../dist
 	../node_modules/.bin/rollup -c $(CLI_CONFIG)
+	chmod a+x $(CLI_DST)
 	@ls -l $@
 	@echo ""
 
