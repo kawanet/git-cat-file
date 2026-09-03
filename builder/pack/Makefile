@@ -27,7 +27,12 @@ pack: clean
 bundled:
 	$(MAKE) -C .. $(TESTS_DST)
 
+# The lane has no manifest, so the test-only peers the suites need come
+# from builder/pack/package.json. It names no package and declares no
+# exports, which is what keeps a self-reference from beating node_modules.
+# A checkout has its own manifest and keeps it.
 unpack:
+	[ -e ../../package.json ] || cp package.json ../../
 	cd ../.. && npm install ./builder/pack/packed.tgz --no-audit --no-fund --no-save
 
 test: test-bundled test-bin test-cli
