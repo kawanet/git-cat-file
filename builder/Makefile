@@ -28,7 +28,7 @@ MAX_BYTES := 30000
 
 # Same purpose as the cap above: a jump past this means the test bundle
 # accidentally inlined library sources or a dependency.
-TEST_MAX_BYTES := 30000
+TEST_MAX_BYTES := 10000
 
 ALL := $(MJS_DST) $(CJS_DST) $(CLI_DST)
 
